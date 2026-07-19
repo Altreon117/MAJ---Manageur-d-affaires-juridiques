@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QFrame, QMainWindow, QWidget, QVBoxLayout
 from PyQt6.QtGui import QIcon
 
 from config import APP_NAME, ICON_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
@@ -26,4 +26,20 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         
         #Application d'un layout au widget central
-        layout = QVBoxLayout(central_widget)
+        self.main_layout = QVBoxLayout(central_widget)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        
+        # --- LE HEADER ---
+        self.header_frame = QFrame()
+        self.header_frame.setObjectName("header_frame")
+        self.header_frame.setFixedHeight(70)
+        
+        # --- LE BODY (Corps de la page) ---
+        self.body_widget = QWidget()
+        self.body_layout = QVBoxLayout(self.body_widget)
+        self.body_layout.setContentsMargins(20, 20, 20, 20)
+        
+        #Assemblage final
+        self.main_layout.addWidget(self.header_frame)
+        self.main_layout.addWidget(self.body_widget)

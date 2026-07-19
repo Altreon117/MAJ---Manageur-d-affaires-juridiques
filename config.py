@@ -12,16 +12,18 @@ WINDOW_HEIGHT = 720
 
 # --- THÈMES ---
 THEME_LIGHT = {
-    "bg_main": "#FFFFFF",
-    "text_main": "#2D3436",
+    "bg_main": "#F5F6FA",
+    "bg_header": "#FFFFFF",
+    "text_main": "#000000",
     "primary_mauve": "#bca0dc",
-    "border": "#DFE6E9",
+    "border": "#A4ACAFFF",
 }
 
 THEME_DARK = {
     "bg_main": "#1E1E1E",
+    "bg_header": "#2D2D2D",
     "text_main": "#FFFFFF",
-    "primary_mauve": "#bca0dc", # On peut garder le même mauve ou l'adapter
+    "primary_mauve": "#bca0dc",
     "border": "#333333",
 }
 
@@ -36,5 +38,11 @@ def get_stylesheet(theme: dict) -> str:
             color: {theme['text_main']};
             font-family: 'Segoe UI', Arial, sans-serif;
             font-size: 14px;
+        }}
+        
+        /* 💡 CIBLAGE SPÉCIFIQUE DU HEADER */
+        #header_frame {{
+            background-color: {theme['bg_header']};
+            border-bottom: 1px solid {theme['border']};
         }}
     """
