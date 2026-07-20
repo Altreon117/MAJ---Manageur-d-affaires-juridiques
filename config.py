@@ -17,6 +17,9 @@ THEME_LIGHT = {
     "text_main": "#000000",
     "primary_mauve": "#bca0dc",
     "border": "#A4ACAFFF",
+    "board_border_background": "#FFFFFF",
+    "board_border_color": "#A4ACAFFF",
+    "board_background": "#FFFFFF",
 }
 
 THEME_DARK = {
@@ -25,6 +28,9 @@ THEME_DARK = {
     "text_main": "#FFFFFF",
     "primary_mauve": "#bca0dc",
     "border": "#333333",
+    "board_border_background": "#2D2D2D",
+    "board_border_color": "#333333",
+    "board_background": "#2D2D2D",
 }
 
 # --- GÉNÉRATEUR DE STYLE (QSS) ---
@@ -62,4 +68,23 @@ def get_stylesheet(theme: dict) -> str:
             border-bottom: 3px solid {theme['primary_mauve']}; /* Soulignement mauve au survol */
             background-color: transparent;
         }}
+        
+        /* --- STYLE DU TABLEAU --- */
+        #board_ext_frame {{
+            background-color: {theme['board_border_background']};
+            border: 1px solid {theme['board_border_color']};
+            border-radius: 10px;
+        }}
+        #board_int_frame {{
+            background-color: {theme['board_background']};
+            border: 1px solid {theme['board_border_color']};
+            border-radius: 10px;
+        }}
+        
+        /* --- STYLE FILTRE ET TRI --- */
+        #filter_frame, #tri_frame {{
+            background-color: {theme['bg_header']};
+            border: 1px solid {theme['border']};
+        }}
+        
     """

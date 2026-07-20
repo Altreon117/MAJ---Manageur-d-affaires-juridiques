@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         # --- LE BODY (Corps de la page) ---
         self.body_widget = QWidget()
         self.body_layout = QVBoxLayout(self.body_widget)
-        self.body_layout.setContentsMargins(20, 20, 20, 20)
+        self.body_layout.setContentsMargins(0, 0, 0, 0)
         
         #QStackedWidget
         self.stacked_widget = QStackedWidget()
