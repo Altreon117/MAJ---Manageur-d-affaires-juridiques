@@ -1,10 +1,14 @@
 import os
-from PyQt6.QtWidgets import QFrame, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QFrame, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QStackedWidget
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtCore import Qt
 
 from config import APP_NAME, ICON_PATH, WINDOW_WIDTH, WINDOW_HEIGHT
 from config import THEME_LIGHT, THEME_DARK, get_stylesheet
+
+from src.ui.view_dashboard import DashBoardView
+from src.ui.view_opj import OPJView
+from src.ui.view_jaf import JAFView
 
 #Pour Windows, pour que l'icône de l'application apparaisse dans la barre des tâches
 if os.name == 'nt':
@@ -78,6 +82,7 @@ class MainWindow(QMainWindow):
             # QSizePolicy.Policy.Expanding force chaque bouton à prendre la place maximale disponible.
             # Comme il y en a 3, ils prendront exactement 1/3 chacun !
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
             bottom_layout.addWidget(btn)
             
         # --- ASSEMBLAGE DU HEADER ---
@@ -91,6 +96,28 @@ class MainWindow(QMainWindow):
         self.body_layout = QVBoxLayout(self.body_widget)
         self.body_layout.setContentsMargins(20, 20, 20, 20)
         
+        #QStackedWidget
+        self.stacked_widget = QStackedWidget()
+        
+        # INSTANCIATION DES PAGES (VUES)
+        self.page_accueil = DashBoardView()
+        self.page_opj = OPJView()
+        self.page_jaf = JAFView()
+        
+        # Ajout des pages au StackedWidget
+        self.stacked_widget.addWidget(self.page_accueil) # Index 0
+        self.stacked_widget.addWidget(self.page_opj)     # Index 1
+        self.stacked_widget.addWidget(self.page_jaf)     # Index 2
+        
+        # Ajout du StackedWidget dans le body
+        self.body_layout.addWidget(self.stacked_widget)
+        
         #Assemblage final
         self.main_layout.addWidget(self.header_frame)
         self.main_layout.addWidget(self.body_widget)
+        
+        # --- CONNEXION DES BOUTONS À LA NAVIGATION ---
+        # On relie chaque bouton à une fonction lambda qui change l'index actif
+        self.btn_accueil.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
+        self.btn_opj.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+        self.btn_jaf.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
