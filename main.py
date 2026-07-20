@@ -6,6 +6,8 @@ def main():
     #Création de l'application (le moteur PyQt6)
     app = QApplication(sys.argv)
     
+    
+    
     #Instanciation de notre fenêtre principale
     window = MainWindow()
     

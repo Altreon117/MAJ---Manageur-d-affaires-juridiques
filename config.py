@@ -40,9 +40,26 @@ def get_stylesheet(theme: dict) -> str:
             font-size: 14px;
         }}
         
-        /* 💡 CIBLAGE SPÉCIFIQUE DU HEADER */
+        /* HEADER */
         #header_frame {{
             background-color: {theme['bg_header']};
             border-bottom: 1px solid {theme['border']};
+        }}
+        
+        /* --- PARTIE HAUTE DU HEADER --- */
+        #top_header_widget {{
+        }}
+        
+        /* --- ONGLETS DU HEADER --- */
+        #nav_button {{
+            border: none; border-radius: 0px; background-color: transparent;
+            font-size: 15px; font-weight: bold; color: {theme['text_main']};
+            border-bottom: 3px solid transparent; /* Bordure invisible par défaut */
+            border: 1px solid {theme['border']};
+        }}
+        #nav_button:hover {{
+            color: {theme['primary_mauve']};
+            border-bottom: 3px solid {theme['primary_mauve']}; /* Soulignement mauve au survol */
+            background-color: transparent;
         }}
     """
