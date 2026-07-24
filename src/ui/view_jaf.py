@@ -1,5 +1,8 @@
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
+
+from src.backend.excel_manager import ExcelManager
+from src.ui.card_jaf_component import CardJAFComponent
 
 class JAFView(QWidget):
     def __init__(self):
@@ -46,21 +49,49 @@ class JAFView(QWidget):
         tri_layout.addWidget(lbl_tri)
         
         # --- PARTIE DROITE BASSE - LITTLE BODY ---
-        self.little_body_widget = QWidget()
-        little_layout = QVBoxLayout(self.little_body_widget)
-        little_layout.setContentsMargins(0, 0, 0, 0)
+        # 1. On crée la zone de défilement
+        self.little_body_scroll_area = QScrollArea()
+        self.little_body_scroll_area.setWidgetResizable(True)
+        self.little_body_scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
         
-        lbl_liste = QLabel("[ Zone des futures cartes de dossiers ]")
-        lbl_liste.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_liste.setStyleSheet("color: gray;")
+        # 2. On crée un widget "conteneur" qui ira à l'intérieur du ScrollArea
+        self.list_container = QWidget()
+        self.list_container.setObjectName("list_container")
+        self.list_container.setStyleSheet("#list_container { background-color: transparent; }")
         
-        little_layout.addWidget(lbl_liste)
-        little_layout.addStretch()
+        # 3. On lui donne un Layout vertical pour empiler les cartes
+        self.list_layout = QVBoxLayout(self.list_container)
+        self.list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.list_layout.setContentsMargins(0, 0, 0, 0)
+        self.list_layout.setSpacing(10) # Espace de 10px entre chaque carte
+        
+        # 4. On appelle notre fonction d'injection des données
+        self.charger_donnees_excel()
+        
+        # 5. On place le conteneur rempli de cartes dans la zone de défilement
+        self.little_body_scroll_area.setWidget(self.list_container)
         
         # --- ASSEMBLAGE DE LA PARTIE DROITE ---
         grand_body_layout.addWidget(self.tri_frame, 1)
-        grand_body_layout.addWidget(self.little_body_widget, 4)
+        grand_body_layout.addWidget(self.little_body_scroll_area, 4)
         
         # --- ASSEMBLAGE FINAL DE LA PAGE ---
         main_layout.addWidget(self.filter_frame, 1) 
         main_layout.addWidget(self.grand_body_frame, 4)
+        
+    
+    def charger_donnees_excel(self):
+        """Lit l'Excel et peuple la vue avec les composants CardOPJComponent."""
+        # On demande au backend de lire l'onglet "JAF"
+        lignes_excel = ExcelManager.read_sheet("JAF")
+        
+        if not lignes_excel:
+            lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet JAF.")
+            lbl_vide.setStyleSheet("color: gray; font-style: italic;")
+            self.list_layout.addWidget(lbl_vide)
+            return
+            
+        # Pour chaque ligne trouvée, on crée une carte et on l'ajoute au layout
+        for row in lignes_excel:
+            carte = CardJAFComponent(row)
+            self.list_layout.addWidget(carte)

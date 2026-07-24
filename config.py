@@ -10,6 +10,11 @@ ICON_PATH = os.path.join(BASE_DIR, "assets", "app_icon.png")
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
+# --- CHEMIN DU FICHIER EXCEL ---
+EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES.xlsx")
+OPJ_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- OPJ.xlsx")
+JAF_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JAF.xlsx")
+
 # --- THÈMES ---
 THEME_LIGHT = {
     "bg_main": "#F5F6FA",
@@ -82,9 +87,27 @@ def get_stylesheet(theme: dict) -> str:
         }}
         
         /* --- STYLE FILTRE ET TRI --- */
-        #filter_frame, #tri_frame {{
+        #filter_frame {{
             background-color: {theme['bg_header']};
             border: 1px solid {theme['border']};
+        }}
+        #tri_frame {{
+            background-color: {theme['bg_header']};
+            border: 1px solid {theme['border']};
+            border-left: none;
+        }}
+        
+        /* --- STYLE DES CARTES --- */
+        #card_opj, #card_jaf {{
+            background-color: {theme['board_background']};
+            border: 1px solid {theme['board_border_color']};
+            border-radius: 8px;
+        }}
+        
+        #card_opj:hover, #card_jaf:hover {{
+            background-color: {theme['primary_mauve']};
+            color: {theme['text_main']};
+            border: 1px solid {theme['primary_mauve']};
         }}
         
     """
