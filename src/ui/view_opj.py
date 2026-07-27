@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
 
+from config import OPJ_BACK_COLUMNS, OPJ_FRONT_COLUMNS
 from src.backend.excel_manager import ExcelManager
 from src.ui.card_opj_component import CardOPJComponent
 
@@ -83,7 +84,7 @@ class OPJView(QWidget):
     def charger_donnees_excel(self):
         """Lit l'Excel et peuple la vue avec les composants CardOPJComponent."""
         # On demande au backend de lire l'onglet "OPJ"
-        lignes_excel = ExcelManager.read_sheet("OPJ")
+        lignes_excel = ExcelManager.read_sheet("OPJ", OPJ_BACK_COLUMNS)
         
         if not lignes_excel:
             lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet OPJ.")
@@ -93,5 +94,5 @@ class OPJView(QWidget):
             
         # Pour chaque ligne trouvée, on crée une carte et on l'ajoute au layout
         for row in lignes_excel:
-            carte = CardOPJComponent(row)
+            carte = CardOPJComponent(row, OPJ_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)

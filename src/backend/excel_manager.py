@@ -6,10 +6,7 @@ from config import EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE
 class ExcelManager:
     @staticmethod
     def split_master_file():
-        """
-        Vérifie si le fichier global (maître) existe, le divise en deux DataFrames (OPJ et JAF),
-        et sauvegarde physiquement les deux nouveaux fichiers Excel.
-        """
+        # Vérifie si le fichier global (maître) existe, le divise en deux DataFrames (OPJ et JAF) et sauvegarde physiquement les deux nouveaux fichiers Excel.
         if not os.path.exists(EXCEL_FILE):
             print(f"Erreur : Le fichier global '{EXCEL_FILE}' est introuvable.")
             return False
@@ -46,12 +43,8 @@ class ExcelManager:
             return False
 
     @staticmethod
-    def read_sheet(affaire_type):
-        """
-        Vérifie la présence des fichiers découpés. S'ils manquent, lance la découpe.
-        Puis lit les données depuis le fichier découpé demandé.
-        """
-        # 1. Vérification de l'existence des DEUX fichiers découpés
+    def read_sheet(affaire_type, colonnes_souhaitees=None):
+        # Vérification de l'existence des 2 fichiers découpés
         fichiers_manquants = not (os.path.exists(OPJ_EXCEL_FILE) and os.path.exists(JAF_EXCEL_FILE))
         
         if fichiers_manquants:
@@ -61,17 +54,24 @@ class ExcelManager:
                 # Si la création échoue (ex: pas de fichier d'origine), on arrête tout
                 return []
 
-        # 2. Détermination du fichier cible (qui existe forcément maintenant)
+        # Détermination du fichier cible (qui existe forcément maintenant)
         specific_file = OPJ_EXCEL_FILE if affaire_type == "OPJ" else JAF_EXCEL_FILE
 
         try:
-            # 3. Lecture du fichier spécifique
+            # Lecture du fichier spécifique
             df = pd.read_excel(specific_file)
             
-            # 4. Nettoyage robuste (remplace les cases vides et dates vides par "")
+            # Filtrage des colonnes
+            if colonnes_souhaitees:
+                # , colonnes_souhaitees=None)érification que les colonnes demandées existent bien dans l'Excel
+                colonnes_presentes = [col for col in colonnes_souhaitees if col in df.columns]
+                # On écrase le tableau pour ne garder que ces colonnes-là
+                df = df[colonnes_presentes]
+            
+            # Nettoyage robuste (remplace les cases vides et dates vides par "")
             df = df.replace({np.nan: "", pd.NaT: ""})
             
-            # 5. Conversion en liste de dictionnaires pour l'interface
+            # Conversion en liste de dictionnaires pour l'interface
             lignes = df.to_dict(orient='records')
             return lignes
 

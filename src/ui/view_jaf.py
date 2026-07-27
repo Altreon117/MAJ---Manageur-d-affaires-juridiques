@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea
 from PyQt6.QtCore import Qt
 
+from config import JAF_BACK_COLUMNS, JAF_FRONT_COLUMNS
 from src.backend.excel_manager import ExcelManager
 from src.ui.card_jaf_component import CardJAFComponent
 
@@ -81,9 +82,9 @@ class JAFView(QWidget):
         
     
     def charger_donnees_excel(self):
-        """Lit l'Excel et peuple la vue avec les composants CardOPJComponent."""
+        """Lit l'Excel et peuple la vue avec les composants CardJAFComponent."""
         # On demande au backend de lire l'onglet "JAF"
-        lignes_excel = ExcelManager.read_sheet("JAF")
+        lignes_excel = ExcelManager.read_sheet("JAF", JAF_BACK_COLUMNS)
         
         if not lignes_excel:
             lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet JAF.")
@@ -93,5 +94,5 @@ class JAFView(QWidget):
             
         # Pour chaque ligne trouvée, on crée une carte et on l'ajoute au layout
         for row in lignes_excel:
-            carte = CardJAFComponent(row)
+            carte = CardJAFComponent(row, JAF_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)

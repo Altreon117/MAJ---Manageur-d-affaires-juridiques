@@ -15,6 +15,33 @@ EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES.xlsx")
 OPJ_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- OPJ.xlsx")
 JAF_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JAF.xlsx")
 
+# --- COLONNES EN BACK DES TABLEAUX ---
+OPJ_BACK_COLUMNS = [
+        "NOM",
+        "Planification",
+        "Propriétaire",
+        "CHORUS PRO",
+        "periode",
+        "montant"
+    
+]
+JAF_BACK_COLUMNS = [
+        "NOM"
+]
+
+# --- COLONNES AFFICHER DES TABLEAUX ---
+OPJ_FRONT_COLUMNS = [
+        "NOM",
+        "Planification",
+        "Propriétaire",
+        "CHORUS PRO",
+        "periode",
+        "montant"
+]
+JAF_FRONT_COLUMNS = [
+        "NOM"
+]
+
 # --- THÈMES ---
 THEME_LIGHT = {
     "bg_main": "#F5F6FA",
