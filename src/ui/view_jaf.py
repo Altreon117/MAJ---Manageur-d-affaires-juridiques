@@ -1,7 +1,7 @@
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QComboBox, QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 
-from config import JAF_BACK_COLUMNS, JAF_FRONT_COLUMNS
+from config import JAF_BACK_COLUMNS, JAF_FILTER_COLUMNS, JAF_FRONT_COLUMNS
 from src.backend.excel_manager import ExcelManager
 from src.ui.card_jaf_component import CardJAFComponent
 
@@ -14,6 +14,8 @@ class JAFView(QWidget):
         
         self.all_cards = []
         
+        self.filter_comboboxes = {}
+        
         # LAYOUT PRINCIPAL DE LA PAGE
         main_layout = QHBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -23,14 +25,36 @@ class JAFView(QWidget):
         # --- PARTIE GAUCHE - FILTRE ---
         self.filter_frame = QFrame()
         self.filter_frame.setObjectName("filter_frame")
+        self.filter_frame.setFixedWidth(250) # Pour respecter les proportions de ta maquette
         
         filter_layout = QVBoxLayout(self.filter_frame)
+        filter_layout.setAlignment(Qt.AlignmentFlag.AlignTop) # Pousse tout vers le haut
         filter_layout.setContentsMargins(20, 20, 20, 20)
+        filter_layout.setSpacing(15)
         
         lbl_filtre = QLabel("FILTRE")
-        lbl_filtre.setStyleSheet("font-size: 20px; font-weight: bold;")
+        lbl_filtre.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 10px;")
         filter_layout.addWidget(lbl_filtre)
-        filter_layout.addStretch()
+        
+        # 💡 GÉNÉRATION DYNAMIQUE DES FILTRES DEPUIS LE DICTIONNAIRE
+        for col_back, col_front in JAF_FILTER_COLUMNS.items():
+            # Titre du filtre
+            lbl = QLabel(col_front)
+            lbl.setStyleSheet("font-size: 14px;")
+        
+            # Liste déroulante
+            combo = QComboBox()
+            combo.addItem("Sélectionner")
+        
+            # Connexion au moteur de filtre global à chaque changement
+            combo.currentTextChanged.connect(self.appliquer_filtres_globaux)
+        
+            # Ajout au layout
+            filter_layout.addWidget(lbl)
+            filter_layout.addWidget(combo)
+        
+            # Sauvegarde dans notre dictionnaire (Clé = Nom Backend de la colonne)
+            self.filter_comboboxes[col_back] = combo
         
         # --- PARTIE DROITE - GRAND BODY ---
         self.grand_body_frame = QFrame()
@@ -137,22 +161,32 @@ class JAFView(QWidget):
         
     
     def charger_donnees_excel(self):
-        """Lit l'Excel et peuple la vue avec les composants CardJAFComponent."""
-        # On demande au backend de lire l'onglet "JAF"
-        lignes_excel = ExcelManager.read_sheet("JAF", JAF_BACK_COLUMNS)
+        """Lit l'Excel et peuple la vue avec les composants."""
+        lignes_excel = ExcelManager.read_sheet("OPJ", JAF_BACK_COLUMNS)
+        self.all_cards.clear()
         
         if not lignes_excel:
-            lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet JAF.")
+            lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet OPJ.")
             lbl_vide.setStyleSheet("color: gray; font-style: italic;")
             self.list_layout.addWidget(lbl_vide)
             return
             
-        # Pour chaque ligne trouvée, on crée une carte et on l'ajoute au layout
         for row in lignes_excel:
             carte = CardJAFComponent(row, JAF_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)
-            
             self.all_cards.append(carte)
+            
+        # 💡 REMPLISSAGE DYNAMIQUE DES COMBOBOX (après avoir chargé les données)
+        for col_back, combo in self.filter_comboboxes.items():
+            # On utilise un set() pour éviter les doublons
+            valeurs_uniques = set()
+            for row in lignes_excel:
+                val = str(row.get(col_back, "")).strip()
+                if val: # Si la case n'est pas vide
+                    valeurs_uniques.add(val)
+            
+            # On ajoute les valeurs triées par ordre alphabétique
+            combo.addItems(sorted(list(valeurs_uniques)))
             
     def filtrer_en_temps_reel(self, texte_recherche):
         """Parcourt le layout et masque les cartes qui ne correspondent pas au texte."""
@@ -236,3 +270,29 @@ class JAFView(QWidget):
             
             # 💡 On lance le tri sur la colonne demandée
             self.appliquer_tri(nom_colonne)
+            
+    def appliquer_filtres_globaux(self, *args):
+            """Croise la barre de recherche textuelle ET toutes les combobox."""
+            texte_recherche = self.search_input.text().lower()
+            
+            # On parcourt la liste en mémoire, c'est beaucoup plus sûr et rapide
+            for carte in self.all_cards:
+                
+                # 1. Validation de la barre de recherche
+                match_texte = carte.correspond_a_la_recherche(texte_recherche)
+                
+                # 2. Validation des listes déroulantes
+                match_combos = True
+                for col_back, combo in self.filter_comboboxes.items():
+                    valeur_choisie = combo.currentText()
+                    
+                    # Si l'utilisateur a sélectionné autre chose que le paramètre par défaut
+                    if valeur_choisie != "Sélectionner":
+                        # On vérifie ce que contient la carte pour cette colonne précise
+                        valeur_carte = str(carte.row_data.get(col_back, "")).strip()
+                        if valeur_carte != valeur_choisie:
+                            match_combos = False
+                            break # Inutile de tester les autres filtres, la carte est déjà éliminée
+                
+                # 3. Verdict final : La carte doit correspondre au texte ET aux combos
+                carte.setVisible(match_texte and match_combos)

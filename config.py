@@ -24,17 +24,24 @@ OPJ_BACK_COLUMNS = [
         "Propriétaire",
         "CHORUS PRO",
         "periode",
-        "montant"
+        "montant",
+        "État",
+        "État 2"
     
 ]
 JAF_BACK_COLUMNS = [
         "NOM",
-        "CHORUS PRO"
+        "CHORUS PRO",
+        "ETAT",
+        "État",
+        "État 2"
 ]
 
 JI_BACK_COLUMNS = [
         "NOM",
-        "CHORUS PRO"
+        "CHORUS PRO",
+        "État",
+        "État 2"
 ]
 
 # --- COLONNES AFFICHER DES TABLEAUX ---
@@ -53,6 +60,21 @@ JAF_FRONT_COLUMNS = [
 JI_FRONT_COLUMNS = [
         "NOM"
 ]
+
+# --- FILTRES ---
+OPJ_FILTER_COLUMNS = {
+    "Planification": "Planification Rendez-vous",
+    "État": "Statut du rapport",
+    "État 2": "Statut du payement",
+}
+JAF_FILTER_COLUMNS = {
+    "État": "Statut du rapport",
+    "État 2": "Statut du payement",
+}
+JI_FILTER_COLUMNS = {
+    "État": "Statut du rapport",
+    "État 2": "Statut du payement",
+}
 
 # --- THÈMES ---
 THEME_LIGHT = {
@@ -180,5 +202,25 @@ def get_stylesheet(theme: dict) -> str:
             color: {theme['text_main']};
             border: 1px solid {theme['primary_mauve']};
             font-weight: bold;
+        }}
+        
+        /* --- STYLE DES COMBOBOX (FILTRES) --- */
+        QComboBox {{
+            background-color: {theme['board_background']};
+            border: 1px solid {theme['border']};
+            border-radius: 4px;
+            padding: 5px;
+            color: {theme['text_main']};
+            min-height: 25px;
+            font-size: 14px;
+        }}
+        
+        QComboBox QAbstractItemView {{
+            font-size: 14px;
+            background-color: {theme['board_background']};
+            color: {theme['text_main']};
+            selection-background-color: {theme['primary_mauve']};
+            selection-color: {theme['text_main']};
+            outline: none;
         }}
     """
