@@ -9,6 +9,7 @@ from config import THEME_LIGHT, THEME_DARK, get_stylesheet
 from src.ui.view_dashboard import DashBoardView
 from src.ui.view_opj import OPJView
 from src.ui.view_jaf import JAFView
+from src.ui.view_ji import JIView
 
 #Pour Windows, pour que l'icône de l'application apparaisse dans la barre des tâches
 if os.name == 'nt':
@@ -76,11 +77,12 @@ class MainWindow(QMainWindow):
         self.btn_accueil = QPushButton("Accueil")
         self.btn_opj = QPushButton("OPJ")
         self.btn_jaf = QPushButton("JAF")
+        self.btn_ji = QPushButton("JI")
         
-        for btn in [self.btn_accueil, self.btn_opj, self.btn_jaf]:
+        for btn in [self.btn_accueil, self.btn_opj, self.btn_jaf, self.btn_ji]:
             btn.setObjectName("nav_button")
             # QSizePolicy.Policy.Expanding force chaque bouton à prendre la place maximale disponible.
-            # Comme il y en a 3, ils prendront exactement 1/3 chacun !
+            # Comme il y en a 4, ils prendront exactement 1/4 chacun !
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             bottom_layout.addWidget(btn)
@@ -103,12 +105,13 @@ class MainWindow(QMainWindow):
         self.page_accueil = DashBoardView()
         self.page_opj = OPJView()
         self.page_jaf = JAFView()
-        
+        self.page_ji = JIView()
         # Ajout des pages au StackedWidget
         self.stacked_widget.addWidget(self.page_accueil) # Index 0
         self.stacked_widget.addWidget(self.page_opj)     # Index 1
         self.stacked_widget.addWidget(self.page_jaf)     # Index 2
-        
+        self.stacked_widget.addWidget(self.page_ji)      # Index 3
+
         # Ajout du StackedWidget dans le body
         self.body_layout.addWidget(self.stacked_widget)
         
@@ -121,3 +124,4 @@ class MainWindow(QMainWindow):
         self.btn_accueil.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
         self.btn_opj.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
         self.btn_jaf.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
+        self.btn_ji.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(3))

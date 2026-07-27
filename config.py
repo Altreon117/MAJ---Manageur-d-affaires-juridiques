@@ -14,11 +14,13 @@ WINDOW_HEIGHT = 720
 EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES.xlsx")
 OPJ_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- OPJ.xlsx")
 JAF_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JAF.xlsx")
+JI_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JI.xlsx")
 
 # --- COLONNES EN BACK DES TABLEAUX ---
 OPJ_BACK_COLUMNS = [
         "NOM",
         "Planification",
+        "Column 13",
         "Propriétaire",
         "CHORUS PRO",
         "periode",
@@ -26,7 +28,13 @@ OPJ_BACK_COLUMNS = [
     
 ]
 JAF_BACK_COLUMNS = [
-        "NOM"
+        "NOM",
+        "CHORUS PRO"
+]
+
+JI_BACK_COLUMNS = [
+        "NOM",
+        "CHORUS PRO"
 ]
 
 # --- COLONNES AFFICHER DES TABLEAUX ---
@@ -39,6 +47,10 @@ OPJ_FRONT_COLUMNS = [
         "montant"
 ]
 JAF_FRONT_COLUMNS = [
+        "NOM"
+]
+
+JI_FRONT_COLUMNS = [
         "NOM"
 ]
 
@@ -125,13 +137,13 @@ def get_stylesheet(theme: dict) -> str:
         }}
         
         /* --- STYLE DES CARTES --- */
-        #card_opj, #card_jaf {{
+        #card_opj, #card_jaf, #card_ji {{
             background-color: {theme['board_background']};
             border: 1px solid {theme['board_border_color']};
             border-radius: 8px;
         }}
         
-        #card_opj:hover, #card_jaf:hover {{
+        #card_opj:hover, #card_jaf:hover, #card_ji:hover {{
             background-color: {theme['primary_mauve']};
             color: {theme['text_main']};
             border: 1px solid {theme['primary_mauve']};
