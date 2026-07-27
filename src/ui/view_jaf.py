@@ -171,28 +171,47 @@ class JAFView(QWidget):
                 widget.setVisible(correspond)
                 
     def appliquer_tri(self, nom_colonne=None):
-            """Trie visuellement les cartes dans le layout."""
-            # 1. On retire toutes les cartes du layout (sans les détruire de la mémoire)
-            while self.list_layout.count():
-                item = self.list_layout.takeAt(0)
-                if item.widget():
-                    item.widget().setParent(None) # Détache visuellement le widget
-    
-            # 2. On détermine la liste triée
-            if nom_colonne is None:
-                # Si aucun tri n'est demandé, on reprend la liste dans l'ordre d'origine
-                cartes_triees = self.all_cards
-            else:
-                # 💡 MAGIE PYTHON : On trie la liste en regardant dans le dictionnaire row_data de chaque carte
-                cartes_triees = sorted(
-                    self.all_cards, 
-                    # On met tout en minuscules (lower) pour qu'un "a" et un "A" soient classés ensemble
-                    key=lambda carte: str(carte.row_data.get(nom_colonne, "")).lower()
-                )
-    
-            # 3. On réinjecte les cartes dans le layout dans le bon ordre
-            for carte in cartes_triees:
-                self.list_layout.addWidget(carte)
+        """Trie visuellement les cartes dans le layout (vides à la fin, nombres respectés)."""
+        # 1. On retire toutes les cartes du layout
+        while self.list_layout.count():
+            item = self.list_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        # 2. On détermine la liste triée
+        if nom_colonne is None:
+            # Annulation du tri : on remet l'ordre d'origine
+            cartes_triees = self.all_cards
+        else:
+            # 💡 Fonction de tri sur-mesure (Type-Aware)
+            def cle_de_tri(carte):
+                valeur_brute = str(carte.row_data.get(nom_colonne, "")).strip()
+                
+                # Étape A : Est-ce que la case est vide ?
+                est_vide = (valeur_brute == "")
+                
+                # Étape B : Est-ce un nombre ou du texte ?
+                try:
+                    # On tente de le convertir en chiffre décimal (float)
+                    valeur_reelle = float(valeur_brute)
+                    est_texte = False
+                except ValueError:
+                    # Si ça plante, c'est que c'est du vrai texte (ou un identifiant)
+                    valeur_reelle = valeur_brute.lower()
+                    est_texte = True
+                    
+                # Le tuple de tri final (Ordre de priorité) :
+                # 1. `est_vide` : Les non-vides (False=0) s'affichent avant les vides (True=1)
+                # 2. `est_texte`: Les nombres (False=0) s'affichent avant les textes purs (True=1)
+                # 3. `valeur_reelle` : Tri mathématique naturel (500 < 1000) ou tri alphabétique (A < Z)
+                return (est_vide, est_texte, valeur_reelle)
+
+            # Application du tri avec notre nouvelle clé
+            cartes_triees = sorted(self.all_cards, key=cle_de_tri)
+
+        # 3. On réinjecte les cartes dans le bon ordre
+        for carte in cartes_triees:
+            self.list_layout.addWidget(carte)
     
     def gerer_tri(self, nom_colonne, clicked_button):
         """Gère la logique exclusive des boutons de tri (Switch & Toggle)."""
