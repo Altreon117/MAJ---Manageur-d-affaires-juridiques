@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit
 from PyQt6.QtCore import Qt
 
 from config import JAF_BACK_COLUMNS, JAF_FRONT_COLUMNS
@@ -38,16 +38,54 @@ class JAFView(QWidget):
         # --- PARTIE DROITE HAUTE - RECHERCHE / TRI ---
         self.tri_frame = QFrame()
         self.tri_frame.setObjectName("tri_frame")
+        
+        # Layout vertical principal pour cette zone (pour empiler Recherche puis Tri)
         tri_layout = QVBoxLayout(self.tri_frame)
-        tri_layout.setContentsMargins(0, 0, 0, 0)
+        # On ajoute des marges internes pour que ça respire un peu
+        tri_layout.setContentsMargins(15, 15, 15, 15) 
+        tri_layout.setSpacing(15) # Espace entre la ligne de recherche et la ligne de tri
+        
+        # --- Ligne 1 : RECHERCHE (Horizontal) ---
+        recherche_layout = QHBoxLayout()
         
         lbl_recherche = QLabel("RECHERCHER :")
-        lbl_tri = QLabel("TRIER PAR :")
-        lbl_recherche.setStyleSheet("font-size: 16px;")
-        lbl_tri.setStyleSheet("font-size: 16px;")
+        lbl_recherche.setStyleSheet("font-size: 16px; font-weight: bold;")
         
-        tri_layout.addWidget(lbl_recherche)
-        tri_layout.addWidget(lbl_tri)
+        # Création de la barre de saisie
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Saisissez un nom, une référence...")
+        self.search_input.setFixedHeight(35)
+        # Style de la barre de recherche (bordure neutre par défaut, mauve au focus)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #A4ACAFFF;
+                border-radius: 5px;
+                padding-left: 10px;
+                font-size: 14px;
+                background-color: #FFFFFF;
+            }
+            QLineEdit:focus {
+                border: 2px solid #bca0dc;
+            }
+        """)
+        
+        self.search_input.textChanged.connect(self.filtrer_en_temps_reel)
+        
+        recherche_layout.addWidget(lbl_recherche)
+        recherche_layout.addWidget(self.search_input)
+        
+        # --- Ligne 2 : TRI (Horizontal) ---
+        tri_row_layout = QHBoxLayout()
+        
+        lbl_tri = QLabel("TRIER PAR :")
+        lbl_tri.setStyleSheet("font-size: 16px; font-weight: bold;")
+        
+        tri_row_layout.addWidget(lbl_tri)
+        tri_row_layout.addStretch() # Pousse le label à gauche, laisse la place pour les futurs boutons
+        
+        # --- Assemblage des lignes dans le cadre ---
+        tri_layout.addLayout(recherche_layout)
+        tri_layout.addLayout(tri_row_layout)
         
         # --- PARTIE DROITE BASSE - LITTLE BODY ---
         # 1. On crée la zone de défilement
@@ -96,3 +134,19 @@ class JAFView(QWidget):
         for row in lignes_excel:
             carte = CardJAFComponent(row, JAF_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)
+            
+    def filtrer_en_temps_reel(self, texte_recherche):
+        """Parcourt le layout et masque les cartes qui ne correspondent pas au texte."""
+        
+        # On boucle sur tous les éléments présents dans la zone de défilement
+        for i in range(self.list_layout.count()):
+            item = self.list_layout.itemAt(i)
+            widget = item.widget()
+            
+            # Sécurité : on vérifie que le widget existe et que c'est bien une "Carte" 
+            # (en vérifiant s'il possède la méthode qu'on vient de créer)
+            if widget and hasattr(widget, "correspond_a_la_recherche"):
+                # On demande à la carte si elle correspond. 
+                # Si oui (True), elle s'affiche. Si non (False), elle se masque instantanément.
+                correspond = widget.correspond_a_la_recherche(texte_recherche)
+                widget.setVisible(correspond)

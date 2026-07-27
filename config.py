@@ -137,4 +137,17 @@ def get_stylesheet(theme: dict) -> str:
             border: 1px solid {theme['primary_mauve']};
         }}
         
+        /* --- STYLE DES TEXTES A L'INTERIEUR DES CARTES --- */
+        
+        #card_label_normal {{
+            border: none;
+            font-size: 14px;
+            color: {theme['text_main']};
+        }}
+        
+        #card_label_nom {{
+            border: none;
+            font-size: 16px;
+            color: #1877F2; /* Bleu de mise en évidence */
+        }}
     """
