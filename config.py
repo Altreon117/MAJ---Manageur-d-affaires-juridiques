@@ -150,4 +150,23 @@ def get_stylesheet(theme: dict) -> str:
             font-size: 16px;
             color: #1877F2; /* Bleu de mise en évidence */
         }}
+        
+        /* --- STYLE DES BOUTONS DE TRI --- */
+        #sort_button {{
+            background-color: {theme['bg_header']};
+            border: 1px solid {theme['border']};
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 13px;
+            color: {theme['text_main']};
+        }}
+        #sort_button:hover {{
+            border: 1px solid {theme['primary_mauve']};
+        }}
+        #sort_button:checked {{
+            background-color: {theme['primary_mauve']};
+            color: {theme['text_main']};
+            border: 1px solid {theme['primary_mauve']};
+            font-weight: bold;
+        }}
     """

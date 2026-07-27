@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 
 from config import JAF_BACK_COLUMNS, JAF_FRONT_COLUMNS
@@ -8,6 +8,11 @@ from src.ui.card_jaf_component import CardJAFComponent
 class JAFView(QWidget):
     def __init__(self):
         super().__init__()
+        
+        self.active_sort_button = None
+        self.current_sort_column = None
+        
+        self.all_cards = []
         
         # LAYOUT PRINCIPAL DE LA PAGE
         main_layout = QHBoxLayout(self)
@@ -74,14 +79,26 @@ class JAFView(QWidget):
         recherche_layout.addWidget(lbl_recherche)
         recherche_layout.addWidget(self.search_input)
         
-        # --- Ligne 2 : TRI (Horizontal) ---
+        # --- Ligne 2 : TRI (Génération dynamique des boutons switch) ---
         tri_row_layout = QHBoxLayout()
+        tri_row_layout.setSpacing(10)
         
         lbl_tri = QLabel("TRIER PAR :")
         lbl_tri.setStyleSheet("font-size: 16px; font-weight: bold;")
-        
         tri_row_layout.addWidget(lbl_tri)
-        tri_row_layout.addStretch() # Pousse le label à gauche, laisse la place pour les futurs boutons
+        
+        # Pour chaque colonne back, on crée un bouton switch cliquable
+        for col_name in JAF_BACK_COLUMNS:
+            btn = QPushButton(col_name)
+            btn.setObjectName("sort_button")
+            btn.setCheckable(True) # 💡 Rend le bouton "basculable" (toggle)
+        
+            # On connecte le clic en passant le nom de la colonne et le bouton lui-même
+            btn.clicked.connect(lambda checked, c=col_name, b=btn: self.gerer_tri(c, b))
+        
+            tri_row_layout.addWidget(btn)
+        
+        tri_row_layout.addStretch()
         
         # --- Assemblage des lignes dans le cadre ---
         tri_layout.addLayout(recherche_layout)
@@ -135,6 +152,8 @@ class JAFView(QWidget):
             carte = CardJAFComponent(row, JAF_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)
             
+            self.all_cards.append(carte)
+            
     def filtrer_en_temps_reel(self, texte_recherche):
         """Parcourt le layout et masque les cartes qui ne correspondent pas au texte."""
         
@@ -150,3 +169,51 @@ class JAFView(QWidget):
                 # Si oui (True), elle s'affiche. Si non (False), elle se masque instantanément.
                 correspond = widget.correspond_a_la_recherche(texte_recherche)
                 widget.setVisible(correspond)
+                
+    def appliquer_tri(self, nom_colonne=None):
+            """Trie visuellement les cartes dans le layout."""
+            # 1. On retire toutes les cartes du layout (sans les détruire de la mémoire)
+            while self.list_layout.count():
+                item = self.list_layout.takeAt(0)
+                if item.widget():
+                    item.widget().setParent(None) # Détache visuellement le widget
+    
+            # 2. On détermine la liste triée
+            if nom_colonne is None:
+                # Si aucun tri n'est demandé, on reprend la liste dans l'ordre d'origine
+                cartes_triees = self.all_cards
+            else:
+                # 💡 MAGIE PYTHON : On trie la liste en regardant dans le dictionnaire row_data de chaque carte
+                cartes_triees = sorted(
+                    self.all_cards, 
+                    # On met tout en minuscules (lower) pour qu'un "a" et un "A" soient classés ensemble
+                    key=lambda carte: str(carte.row_data.get(nom_colonne, "")).lower()
+                )
+    
+            # 3. On réinjecte les cartes dans le layout dans le bon ordre
+            for carte in cartes_triees:
+                self.list_layout.addWidget(carte)
+    
+    def gerer_tri(self, nom_colonne, clicked_button):
+        """Gère la logique exclusive des boutons de tri (Switch & Toggle)."""
+        if self.active_sort_button == clicked_button:
+            # Cas 1 : Désactivation du tri
+            clicked_button.setChecked(False)
+            self.active_sort_button = None
+            self.current_sort_column = None
+            
+            # 💡 On annule le tri (retour à l'ordre d'origine)
+            self.appliquer_tri(None)
+            
+        else:
+            # Cas 2 : Un autre bouton était actif, on l'éteint
+            if self.active_sort_button is not None:
+                self.active_sort_button.setChecked(False)
+            
+            # Cas 3 : Activation du nouveau tri
+            self.active_sort_button = clicked_button
+            self.current_sort_column = nom_colonne
+            clicked_button.setChecked(True)
+            
+            # 💡 On lance le tri sur la colonne demandée
+            self.appliquer_tri(nom_colonne)
