@@ -5,6 +5,7 @@ APP_NAME = "MAJ - Manageur d'affaires juridiques"
 # Chemin absolu vers l'icône (dossier assets à la racine du projet)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_PATH = os.path.join(BASE_DIR, "assets", "app_icon.png")
+MISE_A_JOUR_PAYEMENT_ICON_PATH = os.path.join(BASE_DIR, "assets", "update_transaction.png")
 
 # --- DIMENSIONS DE LA FENÊTRE ---
 WINDOW_WIDTH = 1280
@@ -31,17 +32,23 @@ OPJ_BACK_COLUMNS = [
 ]
 JAF_BACK_COLUMNS = [
         "NOM",
-        "CHORUS PRO",
+        "Planification",
+        "DATE",
+        "date de redaction du rapport",
+        "DATE REMISE DES RAPPORT",
         "ETAT",
-        "État",
-        "État 2"
+        "montant",
 ]
 
 JI_BACK_COLUMNS = [
         "NOM",
+        "periode",
+        "Planification",
+        "CHORUS PRO",
         "CHORUS PRO",
         "État",
-        "État 2"
+        "État 2",
+        "montant"
 ]
 
 # --- COLONNES AFFICHER DES TABLEAUX ---
@@ -51,10 +58,18 @@ OPJ_FRONT_COLUMNS = [
         "Propriétaire",
         "CHORUS PRO",
         "periode",
-        "montant"
+        "montant",
+        "État",
+        "État 2"
 ]
 JAF_FRONT_COLUMNS = [
-        "NOM"
+        "NOM",
+        "Planification",
+        "DATE",
+        "date de redaction du rapport",
+        "DATE REMISE DES RAPPORT",
+        "ETAT",
+        "montant"
 ]
 
 JI_FRONT_COLUMNS = [
@@ -63,15 +78,18 @@ JI_FRONT_COLUMNS = [
 
 # --- FILTRES ---
 OPJ_FILTER_COLUMNS = {
+    "periode": "Période",
     "Planification": "Planification Rendez-vous",
     "État": "Statut du rapport",
     "État 2": "Statut du payement",
 }
 JAF_FILTER_COLUMNS = {
+    "periode": "Période",
     "État": "Statut du rapport",
     "État 2": "Statut du payement",
 }
 JI_FILTER_COLUMNS = {
+    "periode": "Période",
     "État": "Statut du rapport",
     "État 2": "Statut du payement",
 }
@@ -222,5 +240,18 @@ def get_stylesheet(theme: dict) -> str:
             selection-background-color: {theme['primary_mauve']};
             selection-color: {theme['text_main']};
             outline: none;
+        }}
+        
+        /* --- STYLE DU BOUTON FLOTTANT (MISE A JOUR) --- */
+        #fab_update {{
+            background-color: #00A8FF; /* Bleu vif */
+            border-radius: 35px; /* Exactement la moitié de la largeur/hauteur (70px) pour un cercle parfait */
+            border: none;
+        }}
+        #fab_update:hover {{
+            background-color: #0088CC; /* Bleu plus foncé au survol */
+        }}
+        #fab_update:pressed {{
+            background-color: #005580;
         }}
     """

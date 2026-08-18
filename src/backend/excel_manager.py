@@ -103,3 +103,51 @@ class ExcelManager:
         except Exception as e:
             print(f"Erreur lors de la lecture du fichier {specific_file} : {e}")
             return []
+        
+    @staticmethod
+    def update_payments(update_filepath):
+        """Lit le fichier de mise à jour et passe l'État 2 à 'payé' pour les affaires trouvées."""
+        try:
+            # 1. Lecture du fichier de mise à jour
+            df_update = pd.read_excel(update_filepath)
+            
+            # On vérifie que la colonne Note existe bien
+            if 'Note' not in df_update.columns:
+                return -1 
+                
+            # On extrait tous les numéros de la colonne Note (en ignorant les cases vides)
+            notes_payees = df_update['Note'].dropna().astype(str).str.strip().tolist()
+            if not notes_payees:
+                return 0
+                
+            total_updated = 0
+            
+            # 2. On met à jour les 3 fichiers découpés ET le fichier MAÎTRE
+            fichiers_a_mettre_a_jour = [EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE, JI_EXCEL_FILE]
+            
+            for fichier in fichiers_a_mettre_a_jour:
+                if os.path.exists(fichier):
+                    df = pd.read_excel(fichier)
+                    
+                    # On vérifie que les colonnes nécessaires existent dans ce fichier
+                    if 'CHORUS PRO' in df.columns and 'État 2' in df.columns:
+                        # Nettoyage de la colonne pour comparer proprement
+                        chorus_col = df['CHORUS PRO'].astype(str).str.strip()
+                        
+                        # Le masque : Le CHORUS PRO est dans les Notes ET n'est pas déjà 'payé'
+                        mask = chorus_col.isin(notes_payees) & (df['État 2'].astype(str).str.lower().str.strip() != 'payé')
+                        
+                        nombre_modifications = mask.sum()
+                        if nombre_modifications > 0:
+                            df.loc[mask, 'État 2'] = 'payé'
+                            df.to_excel(fichier, index=False)
+                            
+                            # On ne compte le total que sur les fichiers découpés (pour ne pas compter le maître en double)
+                            if fichier != EXCEL_FILE:
+                                total_updated += nombre_modifications
+
+            return total_updated
+            
+        except Exception as e:
+            print(f"Erreur critique lors de la mise à jour des paiements : {e}")
+            return -1

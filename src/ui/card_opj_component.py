@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QFrame, QGridLayout, QLabel
+from PyQt6.QtWidgets import QFrame, QGridLayout, QLabel, QSizePolicy
 from PyQt6.QtCore import Qt
 
 class CardOPJComponent(QFrame):
