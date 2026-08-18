@@ -9,7 +9,7 @@ class CardJIComponent(QFrame):
         self.row_data = row_data 
         
         self.setObjectName("card_ji")
-        self.setMinimumHeight(100) 
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         
         # --- GÉNÉRATION DU FRONTEND (Affichage dynamique en grille) ---
         layout = QGridLayout(self)
