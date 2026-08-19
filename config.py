@@ -186,6 +186,11 @@ def get_stylesheet(theme: dict) -> str:
             border-bottom: 3px solid {theme['primary_mauve']}; /* Soulignement mauve au survol */
             background-color: transparent;
         }}
+        #nav_button:checked {{
+            color: {theme['text_main']};
+            border-bottom: 3px solid {theme['primary_mauve']};
+            background-color: {theme['primary_mauve']};
+        }}
         
         /* --- STYLE DU TABLEAU --- */
         #board_ext_frame {{

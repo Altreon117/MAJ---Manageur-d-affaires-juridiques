@@ -163,6 +163,11 @@ class ExcelManager:
         }
         
         try:
+            # Si les fichiers séparés n'existent pas, on force leur recréation avant de compter !
+            fichiers_manquants = not (os.path.exists(OPJ_EXCEL_FILE) and os.path.exists(JAF_EXCEL_FILE) and os.path.exists(JI_EXCEL_FILE))
+            if fichiers_manquants:
+                ExcelManager.split_master_file()
+            
             dfs = []
             
             # 1. Récupération des totaux par service

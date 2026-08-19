@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
             # Comme il y en a 4, ils prendront exactement 1/4 chacun !
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setCheckable(True)
+            btn.setAutoExclusive(True)
             bottom_layout.addWidget(btn)
             
         # --- ASSEMBLAGE DU HEADER ---
@@ -126,6 +128,8 @@ class MainWindow(QMainWindow):
         self.btn_opj.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
         self.btn_jaf.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(2))
         self.btn_ji.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(3))
+        
+        self.changer_page(0)
         
         # --- 1. LA BANNIÈRE DE NOTIFICATION (Cachée par défaut) ---
         self.notification_banner = QLabel(self)
@@ -177,6 +181,21 @@ class MainWindow(QMainWindow):
             
         # Connexion au clic
         self.fab_update.clicked.connect(self.lancer_mise_a_jour)
+
+    def changer_page(self, index):
+        """Change la page affichée et met à jour le style des boutons du header."""
+        # 1. On change la page
+        self.stacked_widget.setCurrentIndex(index)
+        
+        # 2. On allume le bon bouton (setAutoExclusive éteindra l'ancien tout seul)
+        if index == 0:
+            self.btn_accueil.setChecked(True)
+        elif index == 1:
+            self.btn_opj.setChecked(True)
+        elif index == 2:
+            self.btn_jaf.setChecked(True)
+        elif index == 3:
+            self.btn_ji.setChecked(True)
 
     # --- 3. FONCTIONS DE MISE À JOUR ---
     
