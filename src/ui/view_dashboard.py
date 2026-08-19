@@ -3,13 +3,16 @@ from PyQt6.QtCore import Qt
 
 from config import DASHBOARD_AVAILABLE_PINS, DASHBOARD_DEFAULT_ACTIVE_PINS
 from src.ui.card_dashboard_component import CardDashboardComponent
-from src.backend.excel_manager import ExcelManager # 💡 Nouvel import du backend !
+from src.backend.excel_manager import ExcelManager
+from src.ui.customize_pins_dialog import CustomizePinsDialog
 
 class DashBoardView(QWidget):
     def __init__(self):
         super().__init__()
+        
+        self.active_pins = DASHBOARD_DEFAULT_ACTIVE_PINS.copy()
+        
         layout = QVBoxLayout(self)
-        # 💡 SUPPRESSION du AlignTop. Les "Stretch" plus bas vont centrer le tout automatiquement !
         
         self.cartes_affichees = []
         
@@ -52,9 +55,9 @@ class DashBoardView(QWidget):
         int_layout.addLayout(self.grid_layout)
         ext_layout.addWidget(self.board_int_frame)
         
-        layout.addStretch() # 💡 Pousse le tableau vers le bas
+        layout.addStretch()
         layout.addWidget(self.board_ext_frame)
-        layout.addStretch() # 💡 Pousse le tableau vers le haut -> Centrage parfait !
+        layout.addStretch()
 
     def generer_cartes(self):
         """Génère les 6 cartes dans la grille avec les vraies données."""
@@ -62,16 +65,13 @@ class DashBoardView(QWidget):
             carte.setParent(None)
         self.cartes_affichees.clear()
         
-        # 💡 1. APPEL AU BACKEND POUR AVOIR LES VRAIS CHIFFRES
         metriques = ExcelManager.get_dashboard_metrics()
         
-        for index, pin_key in enumerate(DASHBOARD_DEFAULT_ACTIVE_PINS):
+        for index, pin_key in enumerate(self.active_pins):
             titre_propre = DASHBOARD_AVAILABLE_PINS.get(pin_key, "Inconnu")
-            
-            # 💡 2. RÉCUPÉRATION DE LA DONNÉE RÉELLE
             valeur_reelle = metriques.get(pin_key, 0)
             
-            # Formatage spécial pour que les montants soient jolis (ex: "5 400 €")
+            # Formatage spécial
             if pin_key == "montant_total":
                 valeur_str = f"{valeur_reelle:,} €".replace(",", " ")
             else:
@@ -85,5 +85,13 @@ class DashBoardView(QWidget):
             self.cartes_affichees.append(carte)
 
     def ouvrir_fenetre_customisation(self):
-        """Sera appelée lors du clic sur 'Customize pins'."""
-        print("Ouverture de la pop-up de customisation...")
+        dialog = CustomizePinsDialog(self.active_pins, self)
+        
+        # Si l'utilisateur clique sur "Save" et que la validation passe
+        if dialog.exec():
+            # On récupère la nouvelle sélection
+            nouvelle_selection = dialog.get_selected_pins()
+            self.active_pins = nouvelle_selection
+            
+            # On regénère les cartes instantanément !
+            self.generer_cartes()

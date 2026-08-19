@@ -294,11 +294,11 @@ def get_stylesheet(theme: dict) -> str:
         /* --- STYLE DES CARTES DU DASHBOARD --- */
         #card_dashboard {{
             background-color: {theme['board_background']};
-            border: 2px solid {theme['board_border_color']};
+            border: 2px solid {theme['primary_mauve']};
             border-radius: 10px;
         }}
         #card_dashboard_header {{
-            background-color: {theme['border']};
+            background-color: {theme['primary_mauve']};
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }}
