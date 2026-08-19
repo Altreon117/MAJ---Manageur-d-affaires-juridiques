@@ -217,11 +217,11 @@ class MainWindow(QMainWindow):
 
     def lancer_mise_a_jour(self):
         """Ouvre l'explorateur, lance le script et rafraîchit l'interface."""
-        # Ouverture de l'explorateur de fichiers
+        # Ouverture de l'explorateur de fichiers dans le dossier Télchargements par défaut
         filepath, _ = QFileDialog.getOpenFileName(
-            self, 
+            self,
             "Sélectionner le fichier Excel de paiement", 
-            "", 
+            "os.path.expanduser('~/Downloads')", 
             "Fichiers Excel (*.xlsx *.xls)"
         )
         
@@ -238,3 +238,5 @@ class MainWindow(QMainWindow):
                 self.page_opj.charger_donnees_excel()
                 self.page_jaf.charger_donnees_excel()
                 self.page_ji.charger_donnees_excel()
+                
+                self.page_accueil.generer_cartes()

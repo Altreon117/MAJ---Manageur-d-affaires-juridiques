@@ -106,17 +106,22 @@ class ExcelManager:
         
     @staticmethod
     def update_payments(update_filepath):
-        """Lit le fichier de mise à jour et passe l'État 2 à 'payé' pour les affaires trouvées."""
+        """Lit le fichier bancaire, extrait les CHORUS PRO, et passe l'État 2 à 'payé'."""
         try:
             # 1. Lecture du fichier de mise à jour
             df_update = pd.read_excel(update_filepath)
             
-            # On vérifie que la colonne Note existe bien
-            if 'Note' not in df_update.columns:
+            # On vérifie la présence de la NOUVELLE colonne
+            if 'Référence' not in df_update.columns:
                 return -1 
                 
-            # On extrait tous les numéros de la colonne Note (en ignorant les cases vides)
-            notes_payees = df_update['Note'].dropna().astype(str).str.strip().tolist()
+            # 💡 MAGIE DES REGEX : On extrait spécifiquement le motif "MJ" suivi de chiffres
+            # r'(MJ\d+)' signifie : "Trouve 'MJ' collé à un ou plusieurs chiffres (\d+), et capture-le"
+            extracted_refs = df_update['Référence'].astype(str).str.extract(r'(MJ\d+)', expand=False)
+            
+            # On supprime les lignes qui ne contenaient pas de "MJ..." (devenues NaN) et on convertit en liste
+            notes_payees = extracted_refs.dropna().str.strip().tolist()
+            
             if not notes_payees:
                 return 0
                 
@@ -129,12 +134,9 @@ class ExcelManager:
                 if os.path.exists(fichier):
                     df = pd.read_excel(fichier)
                     
-                    # On vérifie que les colonnes nécessaires existent dans ce fichier
                     if 'CHORUS PRO' in df.columns and 'État 2' in df.columns:
-                        # Nettoyage de la colonne pour comparer proprement
                         chorus_col = df['CHORUS PRO'].astype(str).str.strip()
                         
-                        # Le masque : Le CHORUS PRO est dans les Notes ET n'est pas déjà 'payé'
                         mask = chorus_col.isin(notes_payees) & (df['État 2'].astype(str).str.lower().str.strip() != 'payé')
                         
                         nombre_modifications = mask.sum()
@@ -142,7 +144,6 @@ class ExcelManager:
                             df.loc[mask, 'État 2'] = 'payé'
                             df.to_excel(fichier, index=False)
                             
-                            # On ne compte le total que sur les fichiers découpés (pour ne pas compter le maître en double)
                             if fichier != EXCEL_FILE:
                                 total_updated += nombre_modifications
 
