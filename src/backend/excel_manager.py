@@ -151,3 +151,61 @@ class ExcelManager:
         except Exception as e:
             print(f"Erreur critique lors de la mise à jour des paiements : {e}")
             return -1
+        
+    @staticmethod
+    def get_dashboard_metrics():
+        """Calcule et retourne les métriques pour le dashboard sous forme de dictionnaire."""
+        metrics = {
+            "total_opj": 0, "total_jaf": 0, "total_ji": 0,
+            "attente_paiement": 0, "montant_total": 0,
+            "rapports_a_faire": 0, "affaires_terminees": 0, "chorus_manquants": 0
+        }
+        
+        try:
+            dfs = []
+            
+            # 1. Récupération des totaux par service
+            if os.path.exists(OPJ_EXCEL_FILE):
+                df_opj = pd.read_excel(OPJ_EXCEL_FILE)
+                metrics["total_opj"] = len(df_opj)
+                dfs.append(df_opj)
+                
+            if os.path.exists(JAF_EXCEL_FILE):
+                df_jaf = pd.read_excel(JAF_EXCEL_FILE)
+                metrics["total_jaf"] = len(df_jaf)
+                dfs.append(df_jaf)
+                
+            if os.path.exists(JI_EXCEL_FILE):
+                df_ji = pd.read_excel(JI_EXCEL_FILE)
+                metrics["total_ji"] = len(df_ji)
+                dfs.append(df_ji)
+                
+            # 2. Fusion pour les calculs globaux
+            if dfs:
+                df_global = pd.concat(dfs, ignore_index=True)
+                
+                # Dossiers en attente de paiement (État 2)
+                if 'État 2' in df_global.columns:
+                    etat2 = df_global['État 2'].astype(str).str.strip().str.lower()
+                    metrics["attente_paiement"] = len(df_global[~etat2.isin(['payé', 'nan', '', 'n/a'])])
+                    
+                # Montant total facturé
+                if 'montant' in df_global.columns:
+                    montants = pd.to_numeric(df_global['montant'], errors='coerce').fillna(0)
+                    metrics["montant_total"] = int(montants.sum())
+                    
+                # Rapports à faire / Terminés (État)
+                if 'État' in df_global.columns:
+                    etat = df_global['État'].astype(str).str.strip().str.lower()
+                    metrics["rapports_a_faire"] = len(df_global[etat.isin(['a faire', 'à faire', 'pas commencé'])])
+                    metrics["affaires_terminees"] = len(df_global[etat == 'terminé'])
+                    
+                # Chorus manquants
+                if 'CHORUS PRO' in df_global.columns:
+                    chorus = df_global['CHORUS PRO'].astype(str).str.strip().str.lower()
+                    metrics["chorus_manquants"] = len(df_global[chorus.isin(['nan', '', 'n/a'])])
+                    
+        except Exception as e:
+            print(f"Erreur lors du calcul des métriques du dashboard : {e}")
+            
+        return metrics

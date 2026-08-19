@@ -105,6 +105,29 @@ JI_FILTER_COLUMNS = {
     "État 2": "Statut du payement",
 }
 
+# --- CONFIGURATION DU DASHBOARD ---
+# Dictionnaire de tous les indicateurs disponibles (Clé = ID technique, Valeur = Nom affiché)
+DASHBOARD_AVAILABLE_PINS = {
+    "total_opj": "Total des affaires OPJ",
+    "total_jaf": "Total des affaires JAF",
+    "total_ji": "Total des affaires JI",
+    "attente_paiement": "Dossiers en attente de paiement",
+    "montant_total": "Montant total facturé (€)",
+    "rapports_a_faire": "Rapports à rédiger",
+    "affaires_terminees": "Affaires terminées",
+    "chorus_manquants": "Dossiers sans Chorus Pro"
+}
+
+# Les 6 clés affichées par défaut au lancement
+DASHBOARD_DEFAULT_ACTIVE_PINS = [
+    "total_opj", 
+    "total_jaf", 
+    "total_ji", 
+    "attente_paiement", 
+    "montant_total", 
+    "rapports_a_faire"
+]
+
 # --- THÈMES ---
 THEME_LIGHT = {
     "bg_main": "#F5F6FA",
@@ -114,7 +137,7 @@ THEME_LIGHT = {
     "border": "#A4ACAFFF",
     "board_border_background": "#FFFFFF",
     "board_border_color": "#A4ACAFFF",
-    "board_background": "#FFFFFF",
+    "board_background": "#F5F6FA",
 }
 
 THEME_DARK = {
@@ -255,11 +278,33 @@ def get_stylesheet(theme: dict) -> str:
         
         /* --- STYLE DU BOUTON FLOTTANT (MISE A JOUR) --- */
         #fab_update {{
-            border-radius: 35px; /
+            border-radius: 35px;
             border: none;
         }}
         #fab_update:hover {{
         }}
         #fab_update:pressed {{
+        }}
+        
+        /* --- STYLE DES CARTES DU DASHBOARD --- */
+        #card_dashboard {{
+            background-color: {theme['board_background']};
+            border: 2px solid {theme['board_border_color']};
+            border-radius: 10px;
+        }}
+        #card_dashboard_header {{
+            background-color: {theme['border']};
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }}
+        #card_dashboard_title {{
+            color: {theme['text_main']};
+            font-size: 14px;
+            font-weight: bold;
+        }}
+        #card_dashboard_value {{
+            color: {theme['primary_mauve']};
+            font-size: 32px;
+            font-weight: bold;
         }}
     """
