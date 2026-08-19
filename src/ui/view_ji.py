@@ -112,14 +112,15 @@ class JIView(QWidget):
         lbl_tri.setStyleSheet("font-size: 16px; font-weight: bold;")
         tri_row_layout.addWidget(lbl_tri)
         
-        # Pour chaque colonne back, on crée un bouton switch cliquable
-        for col_name in JI_BACK_COLUMNS:
-            btn = QPushButton(col_name)
+        # 💡 MODIFICATION ICI : On utilise JI_FRONT_COLUMNS.items()
+        for col_back, col_front in JI_FRONT_COLUMNS.items():
+            # Le bouton affiche le texte propre (col_front)
+            btn = QPushButton(col_front) 
             btn.setObjectName("sort_button")
-            btn.setCheckable(True) # 💡 Rend le bouton "basculable" (toggle)
+            btn.setCheckable(True) 
             
-            # On connecte le clic en passant le nom de la colonne et le bouton lui-même
-            btn.clicked.connect(lambda checked, c=col_name, b=btn: self.gerer_tri(c, b))
+            # Mais il envoie le nom technique (col_back) à la fonction de tri !
+            btn.clicked.connect(lambda checked, c=col_back, b=btn: self.gerer_tri(c, b))
             
             tri_row_layout.addWidget(btn)
             
@@ -162,11 +163,19 @@ class JIView(QWidget):
         
     def charger_donnees_excel(self):
         """Lit l'Excel et peuple la vue avec les composants."""
-        lignes_excel = ExcelManager.read_sheet("JI", JI_BACK_COLUMNS)
+        # 💡 CORRECTION JAF : Assure-toi que view_jaf lit bien "JAF" et view_ji lit "JI" !
+        lignes_excel = ExcelManager.read_sheet("JI", JI_BACK_COLUMNS) 
+        
         self.all_cards.clear()
         
+        # 💡 SÉCURITÉ DE MISE À JOUR : On vide visuellement les anciennes cartes avant de recharger
+        while self.list_layout.count():
+            item = self.list_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+        
         if not lignes_excel:
-            lbl_vide = QLabel("Aucun dossier trouvé dans l'onglet JI.")
+            lbl_vide = QLabel("Aucun dossier trouvé.")
             lbl_vide.setStyleSheet("color: gray; font-style: italic;")
             self.list_layout.addWidget(lbl_vide)
             return
@@ -176,17 +185,25 @@ class JIView(QWidget):
             self.list_layout.addWidget(carte)
             self.all_cards.append(carte)
             
-        # 💡 REMPLISSAGE DYNAMIQUE DES COMBOBOX (après avoir chargé les données)
+        # REMPLISSAGE DYNAMIQUE DES COMBOBOX (après avoir chargé les données)
         for col_back, combo in self.filter_comboboxes.items():
-            # On utilise un set() pour éviter les doublons
             valeurs_uniques = set()
             for row in lignes_excel:
                 val = str(row.get(col_back, "")).strip()
+                
+                # On coupe le .0 s'il existe
+                if val.endswith(".0"):
+                    val = val[:-2]
+                    
                 if val: # Si la case n'est pas vide
                     valeurs_uniques.add(val)
             
-            # On ajoute les valeurs triées par ordre alphabétique
+            #SÉCURITÉ DE MISE À JOUR : vide l'ancienne liste déroulante avant d'injecter la nouvelle
+            combo.blockSignals(True) # Empêche le déclenchement intempestif des filtres pendant la suppression
+            combo.clear()
+            combo.addItem("Sélectionner")
             combo.addItems(sorted(list(valeurs_uniques)))
+            combo.blockSignals(False)
             
     def filtrer_en_temps_reel(self, texte_recherche):
         """Parcourt le layout et masque les cartes qui ne correspondent pas au texte."""
@@ -286,10 +303,14 @@ class JIView(QWidget):
                 for col_back, combo in self.filter_comboboxes.items():
                     valeur_choisie = combo.currentText()
                     
-                    # Si l'utilisateur a sélectionné autre chose que le paramètre par défaut
                     if valeur_choisie != "Sélectionner":
-                        # On vérifie ce que contient la carte pour cette colonne précise
                         valeur_carte = str(carte.row_data.get(col_back, "")).strip()
+                        
+                        # 💡 NOUVEAU : On nettoie aussi la donnée brute de la carte pour la comparaison
+                        if valeur_carte.endswith(".0"):
+                            valeur_carte = valeur_carte[:-2]
+                            
+                        # Comparaison propre
                         if valeur_carte != valeur_choisie:
                             match_combos = False
                             break # Inutile de tester les autres filtres, la carte est déjà éliminée

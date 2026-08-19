@@ -18,12 +18,12 @@ class CardOPJComponent(QFrame):
         layout.setHorizontalSpacing(50) 
         layout.setVerticalSpacing(10)   
         
-        for index, col_name in enumerate(colonnes_a_afficher):
-            valeur = str(row_data.get(col_name, "N/A")).strip()
-            
-            lbl = QLabel(f"<b>{col_name}</b> : {valeur}")
-            
-            if col_name == "NOM":
+        for index, (col_back, col_front) in enumerate(colonnes_a_afficher.items()):
+            valeur = str(row_data.get(col_back, "N/A")).strip()
+            if valeur.endswith(".0"):
+                valeur = valeur[:-2]
+            lbl = QLabel(f"<b>{col_front}</b> : {valeur}")
+            if col_back == "NOM":
                 lbl.setObjectName("card_label_nom")
             else:
                 lbl.setObjectName("card_label_normal")

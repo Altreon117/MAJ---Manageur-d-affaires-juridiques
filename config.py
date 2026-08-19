@@ -36,7 +36,9 @@ JAF_BACK_COLUMNS = [
         "DATE",
         "date de redaction du rapport",
         "DATE REMISE DES RAPPORT",
-        "ETAT",
+        "periode",
+        "État",
+        "État 2",
         "montant",
 ]
 
@@ -45,36 +47,45 @@ JI_BACK_COLUMNS = [
         "periode",
         "Planification",
         "CHORUS PRO",
-        "CHORUS PRO",
         "État",
         "État 2",
         "montant"
 ]
 
-# --- COLONNES AFFICHER DES TABLEAUX ---
-OPJ_FRONT_COLUMNS = [
-        "NOM",
-        "Planification",
-        "Propriétaire",
-        "CHORUS PRO",
-        "periode",
-        "montant",
-        "État",
-        "État 2"
-]
-JAF_FRONT_COLUMNS = [
-        "NOM",
-        "Planification",
-        "DATE",
-        "date de redaction du rapport",
-        "DATE REMISE DES RAPPORT",
-        "ETAT",
-        "montant"
-]
+# --- COLONNES AFFICHER DES TABLEAUX (Clé = En backend, Valeur = Nom affiché) ---
+OPJ_FRONT_COLUMNS = {
+        "NOM": "NOM",
+        "periode": "Période de l'affaire",
+        "Propriétaire": "Propriétaire",
+        "CHORUS PRO": "Réf. CHORUS PRO",
+        "Planification": "Planification",
+        "État": "État du rapport",
+        "État 2": "Statut du paiement",
+        "montant": "Montant (€)"
+}
 
-JI_FRONT_COLUMNS = [
-        "NOM"
-]
+JAF_FRONT_COLUMNS = {
+        "NOM": "NOM",
+        "periode": "Période de l'affaire",
+        "Propriétaire": "Propriétaire",
+        "Planification": "Planification",
+        "date de redaction du rapport": "Date de rédaction",
+        "DATE REMISE DES RAPPORT": "Date de remise",
+        "État": "État du rapport",
+        "État 2": "Statut du paiement",
+        "montant": "Montant (€)"
+}
+
+JI_FRONT_COLUMNS = {
+        "NOM": "NOM",
+        "periode": "Période de l'affaire",
+        "Propriétaire": "Propriétaire",
+        "CHORUS PRO": "Réf. CHORUS PRO",
+        "Planification": "Planification",
+        "État": "État du rapport",
+        "État 2": "Statut du paiement",
+        "montant": "Montant (€)"
+}
 
 # --- FILTRES ---
 OPJ_FILTER_COLUMNS = {
@@ -200,7 +211,7 @@ def get_stylesheet(theme: dict) -> str:
         #card_label_nom {{
             border: none;
             font-size: 16px;
-            color: #1877F2; /* Bleu de mise en évidence */
+            color: {theme['text_main']};
         }}
         
         /* --- STYLE DES BOUTONS DE TRI --- */
@@ -224,7 +235,7 @@ def get_stylesheet(theme: dict) -> str:
         
         /* --- STYLE DES COMBOBOX (FILTRES) --- */
         QComboBox {{
-            background-color: {theme['board_background']};
+            background-color: {theme['bg_main']};
             border: 1px solid {theme['border']};
             border-radius: 4px;
             padding: 5px;
@@ -244,14 +255,11 @@ def get_stylesheet(theme: dict) -> str:
         
         /* --- STYLE DU BOUTON FLOTTANT (MISE A JOUR) --- */
         #fab_update {{
-            background-color: #00A8FF; /* Bleu vif */
-            border-radius: 35px; /* Exactement la moitié de la largeur/hauteur (70px) pour un cercle parfait */
+            border-radius: 35px; /
             border: none;
         }}
         #fab_update:hover {{
-            background-color: #0088CC; /* Bleu plus foncé au survol */
         }}
         #fab_update:pressed {{
-            background-color: #005580;
         }}
     """
