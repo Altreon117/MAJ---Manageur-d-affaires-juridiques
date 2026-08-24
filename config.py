@@ -128,6 +128,13 @@ DASHBOARD_DEFAULT_ACTIVE_PINS = [
     "rapports_a_faire"
 ]
 
+# --- CHOIX POUR L'ÉDITION DES AFFAIRES ---
+CHOIX_COLONNES = {
+    "État": ["A faire", "Terminé", "Pas commencé", "En cours"],
+    "État 2": ["payé", "En attente", "Non payé", "N/A"],
+    "Planification": ["VU", "ATTENTE DATES", "A CONVOQUER", "N/A"]
+}
+
 # --- THÈMES ---
 THEME_LIGHT = {
     "bg_main": "#F5F6FA",
@@ -365,6 +372,32 @@ STYLE_CUSTOMIZE_BUTTONS = """
         border-radius: 15px; padding: 5px 15px; font-weight: bold;
     }
     QPushButton:hover { border: 1px solid #bca0dc; color: #bca0dc; }
+"""
+STYLE_EDIT_DIALOG = """
+    QDialog { background-color: #F5F6FA; }
+    QLineEdit { border: 1px solid #A4ACAFFF; border-radius: 5px; padding: 5px; font-size: 14px; background-color: white;}
+    QLineEdit:focus { border: 2px solid #bca0dc; }
+"""
+
+STYLE_EDIT_BUTTONS = """
+    QPushButton { background-color: #FFFFFF; border: 1px solid #A4ACAFFF; border-radius: 5px; padding: 5px 15px; font-weight: bold;}
+    QPushButton:hover { border: 1px solid #bca0dc; color: #bca0dc; }
+"""
+
+STYLE_CARD_EDIT_BUTTON = """
+    QPushButton {
+        background-color: #6C757D;
+        color: white;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    QPushButton:hover { background-color: #5A6268; }
+"""
+
+STYLE_READONLY_INPUT = "background-color: #E0E0E0; color: #555;"
+
+STYLE_EDIT_COMBOBOX = """
+    QComboBox { border: 1px solid #A4ACAFFF; border-radius: 5px; padding: 5px; font-size: 14px; background-color: white; }
 """
 
 def get_notification_style(couleur: str) -> str:

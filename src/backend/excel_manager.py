@@ -215,3 +215,63 @@ class ExcelManager:
             print(f"Erreur lors du calcul des métriques du dashboard : {e}")
             
         return metrics
+    
+    @staticmethod
+    def update_row(onglet_nom, original_data, new_data):
+        """Met à jour une ligne en utilisant CHORUS PRO en priorité absolue, ou le NOM en solution de repli (ex: JAF)."""
+        try:
+            # 1. Identification du fichier cible
+            fichier_cible = None
+            if onglet_nom == "OPJ":
+                fichier_cible = OPJ_EXCEL_FILE
+            elif onglet_nom == "JAF":
+                fichier_cible = JAF_EXCEL_FILE
+            elif onglet_nom == "JI":
+                fichier_cible = JI_EXCEL_FILE
+
+            # Extraction des données clés (get renvoie "" si la colonne n'existe pas, comme pour JAF)
+            chorus_ref = original_data.get("CHORUS PRO", "")
+            nom_affaire = original_data.get("NOM", "")
+
+            # --- MOTEUR DE RECHERCHE EN CASCADE ---
+            def obtenir_masque_de_recherche(dataframe):
+                # NIVEAU 1 : Vérification de la présence du CHORUS PRO (OPJ, JI)
+                if chorus_ref and str(chorus_ref).strip().lower() not in ["", "nan", "n/a", "none"]:
+                    if "CHORUS PRO" in dataframe.columns:
+                        return dataframe["CHORUS PRO"].astype(str).str.strip() == str(chorus_ref).strip()
+                
+                # NIVEAU 2 : Repli sur le NOM (JAF utilise exclusivement ce niveau)
+                if nom_affaire and str(nom_affaire).strip().lower() not in ["", "nan", "n/a", "none"]:
+                    if "NOM" in dataframe.columns:
+                        return dataframe["NOM"].astype(str).str.strip() == str(nom_affaire).strip()
+                        
+                return None
+            # ----------------------------------------
+
+            # 2. Application des modifications sur le fichier découpé
+            if fichier_cible and os.path.exists(fichier_cible):
+                df = pd.read_excel(fichier_cible)
+                mask = obtenir_masque_de_recherche(df)
+                
+                if mask is not None and mask.any():
+                    for col, val in new_data.items():
+                        if col in df.columns:
+                            df.loc[mask, col] = val
+                    df.to_excel(fichier_cible, index=False)
+
+            # 3. Synchronisation avec le fichier MAÎTRE global
+            if os.path.exists(EXCEL_FILE):
+                df_master = pd.read_excel(EXCEL_FILE)
+                mask_master = obtenir_masque_de_recherche(df_master)
+                
+                if mask_master is not None and mask_master.any():
+                    for col, val in new_data.items():
+                        if col in df_master.columns:
+                            df_master.loc[mask_master, col] = val
+                    df_master.to_excel(EXCEL_FILE, index=False)
+                    
+            return True
+            
+        except Exception as e:
+            print(f"Erreur critique lors de la modification de l'affaire : {e}")
+            return False
