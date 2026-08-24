@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt
 
+from config import STYLE_CARD_BODY
+
 class CardDashboardComponent(QFrame):
     def __init__(self, titre_pin, valeur_pin="0"):
         super().__init__()
@@ -27,7 +29,7 @@ class CardDashboardComponent(QFrame):
         
         # --- PARTIE BASSE (CORPS BLANC AVEC VALEUR) ---
         self.body_frame = QFrame()
-        self.body_frame.setStyleSheet("background-color: transparent;") # Prend la couleur de la carte
+        self.body_frame.setStyleSheet(STYLE_CARD_BODY)
         
         body_layout = QVBoxLayout(self.body_frame)
         body_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)

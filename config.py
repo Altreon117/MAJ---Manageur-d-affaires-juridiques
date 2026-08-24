@@ -313,3 +313,59 @@ def get_stylesheet(theme: dict) -> str:
             font-weight: bold;
         }}
     """
+
+# --- STYLES LOCAUX PARTAGES ---
+STYLE_TITLE = "font-size: 20px; font-weight: bold; border: none;"
+STYLE_DASHBOARD_TITLE = "font-size: 32px; font-weight: bold;"
+STYLE_FILTER_TITLE = "font-size: 20px; font-weight: bold; margin-bottom: 10px;"
+STYLE_FILTER_LABEL = "font-size: 14px;"
+STYLE_SEARCH_LABEL = "font-size: 16px; font-weight: bold;"
+STYLE_EMPTY_LABEL = "color: gray; font-style: italic;"
+STYLE_DIALOG_TITLE = "font-size: 18px; font-weight: bold;"
+STYLE_DIALOG_SUBTITLE = "color: gray; font-size: 13px;"
+STYLE_TRANSPARENT_SCROLL_AREA = "QScrollArea { border: none; background-color: transparent; }"
+STYLE_TRANSPARENT_LIST = "#list_container { background-color: transparent; }"
+STYLE_CARD_BODY = "background-color: transparent;"
+STYLE_FAB = "padding: 0px;"
+
+STYLE_SEARCH_INPUT = """
+    QLineEdit {
+        border: 1px solid #A4ACAFFF;
+        border-radius: 5px;
+        padding-left: 10px;
+        font-size: 14px;
+        background-color: #FFFFFF;
+    }
+    QLineEdit:focus {
+        border: 2px solid #bca0dc;
+    }
+"""
+
+STYLE_CUSTOMIZE_DIALOG = """
+    QDialog { background-color: #F5F6FA; }
+    QLabel { color: #000000; font-family: 'Segoe UI', Arial, sans-serif; }
+    QCheckBox { color: #000000; font-size: 14px; padding: 5px; }
+    QCheckBox::indicator {
+        width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        border: 2px solid #A4ACAFFF;
+        background-color: #FFFFFF;
+    }
+    QCheckBox::indicator:checked {
+        background-color: #bca0dc;
+        border: 2px solid #bca0dc;
+    }
+"""
+
+STYLE_CUSTOMIZE_GRID = "background-color: #FFFFFF; border: 1px solid #A4ACAFFF; border-radius: 8px;"
+STYLE_CUSTOMIZE_BUTTONS = """
+    QPushButton {
+        background-color: #FFFFFF; border: 1px solid #A4ACAFFF;
+        border-radius: 15px; padding: 5px 15px; font-weight: bold;
+    }
+    QPushButton:hover { border: 1px solid #bca0dc; color: #bca0dc; }
+"""
+
+def get_notification_style(couleur: str) -> str:
+    return f"background-color: {couleur}; color: white; font-weight: bold; padding: 15px; border-radius: 8px; font-size: 16px;"

@@ -1,7 +1,10 @@
 from PyQt6.QtWidgets import QComboBox, QFrame, QHBoxLayout, QWidget, QVBoxLayout, QLabel, QScrollArea, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt
 
-from config import OPJ_BACK_COLUMNS, OPJ_FILTER_COLUMNS, OPJ_FRONT_COLUMNS
+from config import (OPJ_BACK_COLUMNS, OPJ_FILTER_COLUMNS, OPJ_FRONT_COLUMNS,
+                    STYLE_EMPTY_LABEL, STYLE_FILTER_LABEL, STYLE_FILTER_TITLE,
+                    STYLE_SEARCH_INPUT, STYLE_SEARCH_LABEL,
+                    STYLE_TRANSPARENT_LIST, STYLE_TRANSPARENT_SCROLL_AREA)
 from src.backend.excel_manager import ExcelManager
 from src.ui.card_opj_component import CardOPJComponent
 
@@ -34,14 +37,14 @@ class OPJView(QWidget):
         filter_layout.setSpacing(15)
         
         lbl_filtre = QLabel("FILTRE")
-        lbl_filtre.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 10px;")
+        lbl_filtre.setStyleSheet(STYLE_FILTER_TITLE)
         filter_layout.addWidget(lbl_filtre)
         
         # 💡 GÉNÉRATION DYNAMIQUE DES FILTRES DEPUIS LE DICTIONNAIRE
         for col_back, col_front in OPJ_FILTER_COLUMNS.items():
             # Titre du filtre
             lbl = QLabel(col_front)
-            lbl.setStyleSheet("font-size: 14px;")
+            lbl.setStyleSheet(STYLE_FILTER_LABEL)
             
             # Liste déroulante
             combo = QComboBox()
@@ -79,25 +82,14 @@ class OPJView(QWidget):
         recherche_layout = QHBoxLayout()
         
         lbl_recherche = QLabel("RECHERCHER :")
-        lbl_recherche.setStyleSheet("font-size: 16px; font-weight: bold;")
+        lbl_recherche.setStyleSheet(STYLE_SEARCH_LABEL)
         
         # Création de la barre de saisie
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Saisissez un nom, une référence...")
         self.search_input.setFixedHeight(35)
         # Style de la barre de recherche (bordure neutre par défaut, mauve au focus)
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #A4ACAFFF;
-                border-radius: 5px;
-                padding-left: 10px;
-                font-size: 14px;
-                background-color: #FFFFFF;
-            }
-            QLineEdit:focus {
-                border: 2px solid #bca0dc;
-            }
-        """)
+        self.search_input.setStyleSheet(STYLE_SEARCH_INPUT)
         
         self.search_input.textChanged.connect(self.filtrer_en_temps_reel)
         
@@ -109,7 +101,7 @@ class OPJView(QWidget):
         tri_row_layout.setSpacing(10)
         
         lbl_tri = QLabel("TRIER PAR :")
-        lbl_tri.setStyleSheet("font-size: 16px; font-weight: bold;")
+        lbl_tri.setStyleSheet(STYLE_SEARCH_LABEL)
         tri_row_layout.addWidget(lbl_tri)
         
         # 💡 MODIFICATION ICI : On utilise OPJ_FRONT_COLUMNS.items()
@@ -134,12 +126,12 @@ class OPJView(QWidget):
         # 1. On crée la zone de défilement
         self.little_body_scroll_area = QScrollArea()
         self.little_body_scroll_area.setWidgetResizable(True)
-        self.little_body_scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
+        self.little_body_scroll_area.setStyleSheet(STYLE_TRANSPARENT_SCROLL_AREA)
         
         # 2. On crée un widget "conteneur" qui ira à l'intérieur du ScrollArea
         self.list_container = QWidget()
         self.list_container.setObjectName("list_container")
-        self.list_container.setStyleSheet("#list_container { background-color: transparent; }")
+        self.list_container.setStyleSheet(STYLE_TRANSPARENT_LIST)
         
         # 3. On lui donne un Layout vertical pour empiler les cartes
         self.list_layout = QVBoxLayout(self.list_container)
@@ -176,7 +168,7 @@ class OPJView(QWidget):
         
         if not lignes_excel:
             lbl_vide = QLabel("Aucun dossier trouvé.")
-            lbl_vide.setStyleSheet("color: gray; font-style: italic;")
+            lbl_vide.setStyleSheet(STYLE_EMPTY_LABEL)
             self.list_layout.addWidget(lbl_vide)
             return
             

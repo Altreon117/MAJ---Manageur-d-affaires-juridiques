@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton, QGridLayout
 from PyQt6.QtCore import Qt
 
+from config import STYLE_DASHBOARD_TITLE
+
 from config import DASHBOARD_AVAILABLE_PINS, DASHBOARD_DEFAULT_ACTIVE_PINS
 from src.ui.card_dashboard_component import CardDashboardComponent
 from src.backend.excel_manager import ExcelManager
@@ -32,7 +34,7 @@ class DashBoardView(QWidget):
         header_layout = QHBoxLayout()
         
         titre = QLabel("DASHBOARD")
-        titre.setStyleSheet("font-size: 32px; font-weight: bold;")
+        titre.setStyleSheet(STYLE_DASHBOARD_TITLE)
         
         self.btn_customize = QPushButton("Customize pins")
         self.btn_customize.setObjectName("sort_button") 

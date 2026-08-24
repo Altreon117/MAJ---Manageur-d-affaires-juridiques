@@ -2,7 +2,9 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QCheckBox,
                              QDialogButtonBox, QLabel, QMessageBox, QFrame)
 from PyQt6.QtCore import Qt
 
-from config import DASHBOARD_AVAILABLE_PINS
+from config import (DASHBOARD_AVAILABLE_PINS, STYLE_CUSTOMIZE_BUTTONS,
+                    STYLE_CUSTOMIZE_DIALOG, STYLE_CUSTOMIZE_GRID,
+                    STYLE_DIALOG_SUBTITLE, STYLE_DIALOG_TITLE)
 
 class CustomizePinsDialog(QDialog):
     def __init__(self, current_active_pins, parent=None):
@@ -11,23 +13,7 @@ class CustomizePinsDialog(QDialog):
         self.setFixedSize(500, 350)
         
         # Le style de la fenêtre (fond gris clair)
-        self.setStyleSheet("""
-            QDialog { background-color: #F5F6FA; }
-            QLabel { color: #000000; font-family: 'Segoe UI', Arial, sans-serif; }
-            QCheckBox { color: #000000; font-size: 14px; padding: 5px; }
-            
-            QCheckBox::indicator { 
-                width: 18px; 
-                height: 18px; 
-                border-radius: 9px; 
-                border: 2px solid #A4ACAFFF; 
-                background-color: #FFFFFF;
-            }
-            QCheckBox::indicator:checked { 
-                background-color: #bca0dc; 
-                border: 2px solid #bca0dc; 
-            }
-        """)
+        self.setStyleSheet(STYLE_CUSTOMIZE_DIALOG)
 
         self.ordered_selection = current_active_pins.copy()
         self.checkboxes = {}
@@ -42,17 +28,17 @@ class CustomizePinsDialog(QDialog):
 
         # --- EN-TÊTE ---
         titre = QLabel("Sélectionnez et ordonnez les indicateurs :")
-        titre.setStyleSheet("font-size: 18px; font-weight: bold;")
+        titre.setStyleSheet(STYLE_DIALOG_TITLE)
         
         sous_titre = QLabel("<i>(Maximum 6. L'ordre de vos clics définit l'ordre d'affichage)</i>")
-        sous_titre.setStyleSheet("color: gray; font-size: 13px;")
+        sous_titre.setStyleSheet(STYLE_DIALOG_SUBTITLE)
 
         layout.addWidget(titre)
         layout.addWidget(sous_titre)
 
         # --- CORPS : Grille de Checkboxes ---
         frame_grid = QFrame()
-        frame_grid.setStyleSheet("background-color: #FFFFFF; border: 1px solid #A4ACAFFF; border-radius: 8px;")
+        frame_grid.setStyleSheet(STYLE_CUSTOMIZE_GRID)
         grid_layout = QGridLayout(frame_grid)
         grid_layout.setContentsMargins(15, 15, 15, 15)
         grid_layout.setHorizontalSpacing(30)
@@ -78,13 +64,7 @@ class CustomizePinsDialog(QDialog):
 
         # --- PIED DE PAGE : Boutons Save/Cancel ---
         self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
-        self.button_box.setStyleSheet("""
-            QPushButton {
-                background-color: #FFFFFF; border: 1px solid #A4ACAFFF; 
-                border-radius: 15px; padding: 5px 15px; font-weight: bold;
-            }
-            QPushButton:hover { border: 1px solid #bca0dc; color: #bca0dc; }
-        """)
+        self.button_box.setStyleSheet(STYLE_CUSTOMIZE_BUTTONS)
         
         self.button_box.accepted.connect(self.save_selection)
         self.button_box.rejected.connect(self.reject)

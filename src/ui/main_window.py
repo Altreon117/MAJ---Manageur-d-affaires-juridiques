@@ -4,7 +4,8 @@ from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
 from PyQt6.QtCore import Qt, QTimer, QSize
 
 from config import APP_NAME, ICON_PATH, WINDOW_WIDTH, WINDOW_HEIGHT, MISE_A_JOUR_PAYEMENT_ICON_PATH
-from config import THEME_LIGHT, THEME_DARK, get_stylesheet
+from config import (THEME_LIGHT, THEME_DARK, STYLE_FAB, STYLE_TITLE,
+                    get_notification_style, get_stylesheet)
 
 from src.ui.view_dashboard import DashBoardView
 from src.ui.view_opj import OPJView
@@ -61,7 +62,7 @@ class MainWindow(QMainWindow):
         
         # Le Titre
         self.title_label = QLabel(APP_NAME)
-        self.title_label.setStyleSheet("font-size: 20px; font-weight: bold; border: none;")
+        self.title_label.setStyleSheet(STYLE_TITLE)
         
         # Ajout au layout haut (aligné à gauche)
         top_layout.addWidget(self.logo_label)
@@ -177,7 +178,7 @@ class MainWindow(QMainWindow):
             self.fab_update.setIconSize(QSize(70, 70))
             
             # On enlève le padding interne pour que l'image colle aux bords absolus
-            self.fab_update.setStyleSheet("padding: 0px;")
+            self.fab_update.setStyleSheet(STYLE_FAB)
             
         # Connexion au clic
         self.fab_update.clicked.connect(self.lancer_mise_a_jour)
@@ -219,7 +220,7 @@ class MainWindow(QMainWindow):
     def afficher_notification(self, message, is_error=False):
         """Affiche une bannière temporaire en haut de l'écran."""
         couleur = "#F44336" if is_error else "#4CAF50"
-        style = f"background-color: {couleur}; color: white; font-weight: bold; padding: 15px; border-radius: 8px; font-size: 16px;"
+        style = get_notification_style(couleur)
         
         self.notification_banner.setStyleSheet(style)
         self.notification_banner.setText(message)

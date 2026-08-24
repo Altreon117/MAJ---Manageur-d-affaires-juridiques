@@ -35,7 +35,6 @@ class CardJIComponent(QFrame):
 
     # Le moteur de recherche interne de la carte
     def correspond_a_la_recherche(self, texte_recherche):
-        """Retourne True si le texte cherché se trouve dans les données de cette carte."""
         if not texte_recherche:
             return True 
             
