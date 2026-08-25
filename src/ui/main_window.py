@@ -3,15 +3,17 @@ from PyQt6.QtWidgets import QFrame, QMainWindow, QWidget, QVBoxLayout, QHBoxLayo
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPainterPath
 from PyQt6.QtCore import Qt, QTimer, QSize
 
-from config import APP_NAME, ICON_PATH, WINDOW_WIDTH, WINDOW_HEIGHT, MISE_A_JOUR_PAYEMENT_ICON_PATH
-from config import (THEME_LIGHT, THEME_DARK, STYLE_FAB, STYLE_TITLE,
-                    get_notification_style, get_stylesheet)
+from config import APP_NAME, ICON_PATH, WINDOW_WIDTH, WINDOW_HEIGHT, MISE_A_JOUR_PAYEMENT_ICON_PATH, NOTIFICATION_UP_ICON_PATH,         NOTIFICATION_DOWN_ICON_PATH
+from config import (THEME_LIGHT, THEME_DARK, STYLE_FAB, STYLE_ICON_BUTTON,
+                    STYLE_TITLE, get_notification_style, get_stylesheet)
 
 from src.ui.view_dashboard import DashBoardView
 from src.ui.view_opj import OPJView
 from src.ui.view_jaf import JAFView
 from src.ui.view_ji import JIView
 from src.backend.excel_manager import ExcelManager
+from src.ui.notification_menu import NotificationMenu
+from src.backend.mail_connector import MailConnector
 
 #Pour Windows, pour que l'icône de l'application apparaisse dans la barre des tâches
 if os.name == 'nt':
@@ -28,6 +30,10 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(ICON_PATH))
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.setStyleSheet(get_stylesheet(THEME_LIGHT))
+        
+        # Instanciation du connecteur mail et du menu
+        self.mail_connector = MailConnector()
+        self.menu_notif = NotificationMenu(self)
         
         #Création du widget central (obligatoire dans un QMainWindow)
         central_widget = QWidget()
@@ -68,6 +74,15 @@ class MainWindow(QMainWindow):
         top_layout.addWidget(self.logo_label)
         top_layout.addWidget(self.title_label)
         top_layout.addStretch() # Repousse tout le reste vers la gauche
+        
+        # LE BOUTON NOTIFICATION
+        self.btn_notif = QPushButton()
+        self.btn_notif.setFixedSize(40, 40)
+        self.btn_notif.setStyleSheet(STYLE_ICON_BUTTON)
+        self.btn_notif.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_notif.clicked.connect(self.afficher_menu_notif)
+        
+        top_layout.addWidget(self.btn_notif)
         
         # --- PARTIE BASSE (1/3) : Les boutons de navigation ---
         bottom_header_widget = QWidget()
@@ -182,6 +197,14 @@ class MainWindow(QMainWindow):
             
         # Connexion au clic
         self.fab_update.clicked.connect(self.lancer_mise_a_jour)
+        
+        # Démarrage du timer pour les mails (30 minutes)
+        self.timer_mail = QTimer(self)
+        self.timer_mail.timeout.connect(self.verifier_nouvelles_missions)
+        self.timer_mail.start(1800000)
+
+        # Première vérification au démarrage du logiciel
+        self.verifier_nouvelles_missions()
 
     def changer_page(self, index):
         """Change la page affichée et met à jour le style des boutons du header."""
@@ -260,3 +283,54 @@ class MainWindow(QMainWindow):
                 self.page_ji.charger_donnees_excel()
                 
                 self.page_accueil.generer_cartes()
+                
+                # Nouvelles fonctions pour les mails
+    def afficher_menu_notif(self):
+        """Calcule la position du bouton et affiche le menu déroulant juste en dessous."""
+        pos_bouton = self.btn_notif.mapToGlobal(self.btn_notif.rect().bottomLeft())
+        # Décalage vers la gauche pour bien s'aligner sous la cloche
+        self.menu_notif.move(pos_bouton.x() - 300, pos_bouton.y() + 5)
+        self.menu_notif.show()
+
+    def verifier_nouvelles_missions(self):
+        """Contacte le serveur IMAP et met à jour l'icône de notification."""
+        missions_refusees = ExcelManager.get_refused_missions()
+        nouvelles = self.mail_connector.check_new_missions(missions_refusees)
+        
+        self.menu_notif.peupler_missions(nouvelles)
+        
+        # Changement dynamique d'icône (up = rouge, down = normal)
+        if nouvelles:
+            if os.path.exists(NOTIFICATION_UP_ICON_PATH):
+                self.btn_notif.setIcon(QIcon(NOTIFICATION_UP_ICON_PATH))
+                self.btn_notif.setIconSize(QSize(30, 30))
+            else:
+                self.btn_notif.setText("🔔🔴") # Fallback de secours si image introuvable
+        else:
+            if os.path.exists(NOTIFICATION_DOWN_ICON_PATH):
+                self.btn_notif.setIcon(QIcon(NOTIFICATION_DOWN_ICON_PATH))
+                self.btn_notif.setIconSize(QSize(30, 30))
+            else:
+                self.btn_notif.setText("🔔") # Fallback de secours
+                
+    def mettre_a_jour_icone_cloche(self, a_des_nouvelles):
+        """Change l'icône de la cloche en direct."""
+        if a_des_nouvelles:
+            if os.path.exists(NOTIFICATION_UP_ICON_PATH):
+                self.btn_notif.setIcon(QIcon(NOTIFICATION_UP_ICON_PATH))
+                self.btn_notif.setIconSize(QSize(30, 30))
+            else:
+                self.btn_notif.setText("🔔🔴")
+        else:
+            if os.path.exists(NOTIFICATION_DOWN_ICON_PATH):
+                self.btn_notif.setIcon(QIcon(NOTIFICATION_DOWN_ICON_PATH))
+                self.btn_notif.setIconSize(QSize(30, 30))
+            else:
+                self.btn_notif.setText("🔔")
+
+    def verifier_nouvelles_missions(self):
+        missions_refusees = ExcelManager.get_refused_missions()
+        nouvelles = self.mail_connector.check_new_missions(missions_refusees)
+        
+        self.menu_notif.peupler_missions(nouvelles)
+        self.mettre_a_jour_icone_cloche(len(nouvelles) > 0)

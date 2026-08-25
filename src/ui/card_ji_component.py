@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 
 from src.ui.edit_affaire_dialog import EditAffaireDialog
 from src.backend.excel_manager import ExcelManager
-from config import STYLE_CARD_EDIT_BUTTON
+from config import STYLE_CARD_BODY, STYLE_CARD_EDIT_BUTTON
 
 class CardJIComponent(QFrame):
     def __init__(self, row_data, colonnes_a_afficher, callback_maj=None):
@@ -22,7 +22,7 @@ class CardJIComponent(QFrame):
         
         # 1. Zone des informations textuelles
         info_widget = QWidget()
-        info_widget.setStyleSheet("background-color: transparent;")
+        info_widget.setStyleSheet(STYLE_CARD_BODY)
         grid_layout = QGridLayout(info_widget)
         grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid_layout.setContentsMargins(0, 0, 0, 0)

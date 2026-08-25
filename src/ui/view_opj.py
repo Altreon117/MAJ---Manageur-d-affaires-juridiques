@@ -40,7 +40,7 @@ class OPJView(QWidget):
         lbl_filtre.setStyleSheet(STYLE_FILTER_TITLE)
         filter_layout.addWidget(lbl_filtre)
         
-        # 💡 GÉNÉRATION DYNAMIQUE DES FILTRES DEPUIS LE DICTIONNAIRE
+        # Génération dynamique des filtres depuis le dictionnaire
         for col_back, col_front in OPJ_FILTER_COLUMNS.items():
             # Titre du filtre
             lbl = QLabel(col_front)
@@ -104,7 +104,7 @@ class OPJView(QWidget):
         lbl_tri.setStyleSheet(STYLE_SEARCH_LABEL)
         tri_row_layout.addWidget(lbl_tri)
         
-        # 💡 MODIFICATION ICI : On utilise OPJ_FRONT_COLUMNS.items()
+        # Utilisation de OPJ_FRONT_COLUMNS.items()
         for col_back, col_front in OPJ_FRONT_COLUMNS.items():
             # Le bouton affiche le texte propre (col_front)
             btn = QPushButton(col_front) 
@@ -155,12 +155,12 @@ class OPJView(QWidget):
         
     def charger_donnees_excel(self):
         """Lit l'Excel et peuple la vue avec les composants."""
-        # 💡 CORRECTION JAF : Assure-toi que view_jaf lit bien "JAF" et view_ji lit "JI" !
+        # Vérification que view_jaf lit bien "JAF" et view_ji lit "JI"
         lignes_excel = ExcelManager.read_sheet("OPJ", OPJ_BACK_COLUMNS) 
         
         self.all_cards.clear()
         
-        # 💡 SÉCURITÉ DE MISE À JOUR : On vide visuellement les anciennes cartes avant de recharger
+        # Vidage visuel des anciennes cartes avant de recharger
         while self.list_layout.count():
             item = self.list_layout.takeAt(0)
             if item.widget():
@@ -173,7 +173,7 @@ class OPJView(QWidget):
             return
             
         for row in lignes_excel:
-            carte = CardOPJComponent(row, OPJ_FRONT_COLUMNS) # 💡 À adapter pour JAF/JI
+            carte = CardOPJComponent(row, OPJ_FRONT_COLUMNS)
             self.list_layout.addWidget(carte)
             self.all_cards.append(carte)
             
@@ -226,7 +226,7 @@ class OPJView(QWidget):
             # Annulation du tri : on remet l'ordre d'origine
             cartes_triees = self.all_cards
         else:
-            # 💡 Fonction de tri sur-mesure (Type-Aware)
+            # Fonction de tri sur-mesure (type-aware)
             def cle_de_tri(carte):
                 valeur_brute = str(carte.row_data.get(nom_colonne, "")).strip()
                 
@@ -264,7 +264,7 @@ class OPJView(QWidget):
             self.active_sort_button = None
             self.current_sort_column = None
             
-            # 💡 On annule le tri (retour à l'ordre d'origine)
+            # Annulation du tri (retour à l'ordre d'origine)
             self.appliquer_tri(None)
             
         else:
@@ -277,7 +277,7 @@ class OPJView(QWidget):
             self.current_sort_column = nom_colonne
             clicked_button.setChecked(True)
             
-            # 💡 On lance le tri sur la colonne demandée
+            # Lancement du tri sur la colonne demandée
             self.appliquer_tri(nom_colonne)
             
     def appliquer_filtres_globaux(self, *args):
@@ -299,7 +299,7 @@ class OPJView(QWidget):
                 if valeur_choisie != "Sélectionner":
                     # On vérifie ce que contient la carte pour cette colonne précise
                     valeur_carte = str(carte.row_data.get(col_back, "")).strip()
-                    # 💡 NOUVEAU : On nettoie aussi la donnée brute de la carte pour la comparaison
+                    # Nettoyage de la donnée brute de la carte pour la comparaison
                     if valeur_carte.endswith(".0"):
                         valeur_carte = valeur_carte[:-2]
                         

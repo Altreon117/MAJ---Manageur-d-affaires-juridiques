@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from config import EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE, JI_EXCEL_FILE
+from config import EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE, JI_EXCEL_FILE, REFUS_EXCEL_FILE
 
 class ExcelManager:
     @staticmethod
@@ -20,7 +20,7 @@ class ExcelManager:
             # Fusion de tous les onglets en un seul tableau
             df = pd.concat(all_sheets.values(), ignore_index=True)
             
-            # 💡 NOUVEAU : SYSTÈME ANTI-DOUBLONS
+            # Système anti-doublons
             # On détermine les colonnes qui servent à identifier un doublon
             colonnes_criteres = []
             if 'NOM' in df.columns:
@@ -115,7 +115,7 @@ class ExcelManager:
             if 'Référence' not in df_update.columns:
                 return -1 
                 
-            # 💡 MAGIE DES REGEX : On extrait spécifiquement le motif "MJ" suivi de chiffres
+            # Extraction du motif "MJ" suivi de chiffres
             # r'(MJ\d+)' signifie : "Trouve 'MJ' collé à un ou plusieurs chiffres (\d+), et capture-le"
             extracted_refs = df_update['Référence'].astype(str).str.extract(r'(MJ\d+)', expand=False)
             
@@ -274,4 +274,74 @@ class ExcelManager:
             
         except Exception as e:
             print(f"Erreur critique lors de la modification de l'affaire : {e}")
+            return False
+        
+    @staticmethod
+    def get_refused_missions():
+        """Retourne la liste des sujets de missions refusées. Crée le fichier s'il n'existe pas."""
+        # Création automatique du fichier s'il est manquant
+        if not os.path.exists(REFUS_EXCEL_FILE):
+            df_vide = pd.DataFrame(columns=["Sujet", "Date"])
+            try:
+                df_vide.to_excel(REFUS_EXCEL_FILE, index=False)
+                return []
+            except Exception as e:
+                print(f"Erreur lors de la création du fichier de refus : {e}")
+                return []
+                
+        # Lecture classique si le fichier existe
+        df = pd.read_excel(REFUS_EXCEL_FILE)
+        if "Sujet" in df.columns:
+            return df["Sujet"].tolist()
+        return []
+
+    @staticmethod
+    def add_refused_mission(sujet, date_mail):
+        """Ajoute une mission à la liste noire des refus."""
+        nouvelle_ligne = {"Sujet": sujet, "Date": date_mail}
+        
+        if os.path.exists(REFUS_EXCEL_FILE):
+            df = pd.read_excel(REFUS_EXCEL_FILE)
+            df = pd.concat([df, pd.DataFrame([nouvelle_ligne])], ignore_index=True)
+        else:
+            df = pd.DataFrame([nouvelle_ligne])
+            
+        df.to_excel(REFUS_EXCEL_FILE, index=False)
+        
+    @staticmethod
+    def add_affaire(onglet_nom, new_data):
+        """Ajoute une nouvelle affaire dans le fichier spécifique ET dans le fichier maître."""
+        try:
+            fichier_cible = None
+            if onglet_nom == "OPJ":
+                fichier_cible = OPJ_EXCEL_FILE
+            elif onglet_nom == "JAF":
+                fichier_cible = JAF_EXCEL_FILE
+            elif onglet_nom == "JI":
+                fichier_cible = JI_EXCEL_FILE
+
+            # 1. Ajout dans le fichier découpé (s'il existe)
+            if fichier_cible and os.path.exists(fichier_cible):
+                df = pd.read_excel(fichier_cible)
+                # On transforme le dictionnaire en DataFrame d'une ligne pour l'ajouter proprement
+                df_new = pd.DataFrame([new_data])
+                df = pd.concat([df, df_new], ignore_index=True)
+                df.to_excel(fichier_cible, index=False)
+
+            # 2. Ajout dans le fichier MAÎTRE (très important)
+            if os.path.exists(EXCEL_FILE):
+                df_master = pd.read_excel(EXCEL_FILE)
+                
+                # Pour le fichier maître, on DOIT renseigner la colonne 'REF AFFAIRE' 
+                # sinon il sera perdu à la prochaine découpe !
+                new_data_master = new_data.copy()
+                new_data_master['REF AFFAIRE'] = onglet_nom
+                
+                df_new_master = pd.DataFrame([new_data_master])
+                df_master = pd.concat([df_master, df_new_master], ignore_index=True)
+                df_master.to_excel(EXCEL_FILE, index=False)
+                
+            return True
+        except Exception as e:
+            print(f"Erreur critique lors de la création de l'affaire : {e}")
             return False

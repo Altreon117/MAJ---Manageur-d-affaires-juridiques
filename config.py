@@ -6,6 +6,8 @@ APP_NAME = "MAJ - Manageur d'affaires juridiques"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ICON_PATH = os.path.join(BASE_DIR, "assets", "app_icon.png")
 MISE_A_JOUR_PAYEMENT_ICON_PATH = os.path.join(BASE_DIR, "assets", "update_transaction.png")
+NOTIFICATION_UP_ICON_PATH = os.path.join(BASE_DIR, "assets", "notification_up-icon.png")
+NOTIFICATION_DOWN_ICON_PATH = os.path.join(BASE_DIR, "assets", "notification_down-icon.png")
 
 # --- DIMENSIONS DE LA FENÊTRE ---
 WINDOW_WIDTH = 1280
@@ -16,6 +18,7 @@ EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES.xlsx")
 OPJ_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- OPJ.xlsx")
 JAF_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JAF.xlsx")
 JI_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JI.xlsx")
+REFUS_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "REFUS_MISSION.xlsx")
 
 # --- COLONNES EN BACK DES TABLEAUX ---
 OPJ_BACK_COLUMNS = [
@@ -373,10 +376,45 @@ STYLE_CUSTOMIZE_BUTTONS = """
     }
     QPushButton:hover { border: 1px solid #bca0dc; color: #bca0dc; }
 """
+STYLE_MISSION_CARD = """
+    QFrame { background-color: #FFFFFF; border: 1px solid #A4ACAFFF; border-radius: 8px; }
+    QLabel { border: none; font-size: 14px; color: #000000; }
+    QPushButton { border-radius: 5px; font-weight: bold; padding: 5px; color: white; }
+"""
+STYLE_MISSION_BUTTON_VIEW = "background-color: #6C757D;"
+STYLE_MISSION_BUTTON_ACCEPT = "background-color: #4CAF50;"
+STYLE_MISSION_BUTTON_REFUSE = "background-color: #F44336;"
+STYLE_NOTIFICATION_MENU = "background-color: #F5F6FA; border: 2px solid #bca0dc; border-radius: 10px;"
+STYLE_NOTIFICATION_EMPTY = "color: #000000; font-size: 14px;"
+STYLE_ICON_BUTTON = "border: none; background-color: transparent;"
+
 STYLE_EDIT_DIALOG = """
-    QDialog { background-color: #F5F6FA; }
-    QLineEdit { border: 1px solid #A4ACAFFF; border-radius: 5px; padding: 5px; font-size: 14px; background-color: white;}
+    QDialog { background-color: #F5F6FA; color: #000000; }
+    QLabel { color: #000000; font-size: 14px; }
+    QLineEdit { 
+        border: 1px solid #A4ACAFFF; 
+        border-radius: 5px; 
+        padding: 5px; 
+        font-size: 14px; 
+        background-color: white;
+        color: #000000;
+    }
     QLineEdit:focus { border: 2px solid #bca0dc; }
+    QComboBox {
+        border: 1px solid #A4ACAFFF;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 14px;
+        background-color: white;
+        color: #000000;
+    }
+    QComboBox:focus { border: 2px solid #bca0dc; }
+    QComboBox QAbstractItemView {
+        background-color: white;
+        color: #000000;
+        selection-background-color: #bca0dc;
+        selection-color: #FFFFFF;
+    }
 """
 
 STYLE_EDIT_BUTTONS = """
@@ -395,10 +433,37 @@ STYLE_CARD_EDIT_BUTTON = """
 """
 
 STYLE_READONLY_INPUT = "background-color: #E0E0E0; color: #555;"
+STYLE_EDIT_COMBOBOX = """
+    QComboBox {
+        border: 1px solid #A4ACAFFF;
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 14px;
+        background-color: white;
+        color: #000000;
+    }
+    QComboBox:focus {
+        border: 2px solid #bca0dc;
+    }
+    QComboBox QAbstractItemView {
+        background-color: white;
+        color: #000000;
+        selection-background-color: #bca0dc;
+        selection-color: #FFFFFF;
+    }
+"""
 
 STYLE_EDIT_COMBOBOX = """
-    QComboBox { border: 1px solid #A4ACAFFF; border-radius: 5px; padding: 5px; font-size: 14px; background-color: white; }
+    QComboBox { 
+        border: 1px solid #A4ACAFFF; 
+        border-radius: 5px; 
+        padding: 5px; 
+        font-size: 14px; 
+        background-color: white; 
+        color: #000000;
+    }
 """
+
 
 def get_notification_style(couleur: str) -> str:
     return f"background-color: {couleur}; color: white; font-weight: bold; padding: 15px; border-radius: 8px; font-size: 16px;"
