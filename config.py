@@ -18,6 +18,7 @@ EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES.xlsx")
 OPJ_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- OPJ.xlsx")
 JAF_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JAF.xlsx")
 JI_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "EXPERTISES JUDICIAIRES- JI.xlsx")
+NOTIFICATIONS_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "NOTIFICATIONS_MISSIONS.xlsx")
 REFUS_EXCEL_FILE = os.path.join(BASE_DIR, "assets", "REFUS_MISSION.xlsx")
 
 # --- COLONNES EN BACK DES TABLEAUX ---

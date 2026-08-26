@@ -37,3 +37,27 @@ class MailConnector:
             print(f"Erreur IMAP : {e}")
             
         return nouvelles_missions
+    
+    def check_new_missions(self, missions_refusees, date_depart):
+        """Récupère les mails commençant par MISSION depuis une date dynamique."""
+        if not self.email or not self.password:
+            return []
+
+        nouvelles_missions = []
+        try:
+            with MailBox(self.imap_server).login(self.email, self.password) as mailbox:
+                # 💡 On utilise la date calculée par l'ExcelManager
+                criteres = AND(date_gte=date_depart)
+                
+                for msg in mailbox.fetch(criteres, mark_seen=False):
+                    sujet = msg.subject
+                    if sujet.upper().startswith("MISSION") and sujet not in missions_refusees:
+                        nouvelles_missions.append({
+                            "sujet": sujet,
+                            "date": msg.date.strftime("%d/%m/%Y"),
+                            "uid": msg.uid
+                        })
+        except Exception as e:
+            print(f"Erreur IMAP : {e}")
+            
+        return nouvelles_missions

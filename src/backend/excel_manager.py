@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from config import EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE, JI_EXCEL_FILE, REFUS_EXCEL_FILE
+from config import EXCEL_FILE, NOTIFICATIONS_EXCEL_FILE, OPJ_EXCEL_FILE, JAF_EXCEL_FILE, JI_EXCEL_FILE, REFUS_EXCEL_FILE
 
 class ExcelManager:
     @staticmethod
@@ -345,3 +345,56 @@ class ExcelManager:
         except Exception as e:
             print(f"Erreur critique lors de la création de l'affaire : {e}")
             return False
+        
+    @staticmethod
+    def get_cached_notifications():
+        """Récupère les notifications stockées localement. Crée le fichier si absent."""
+        import datetime
+        if not os.path.exists(NOTIFICATIONS_EXCEL_FILE):
+            df_vide = pd.DataFrame(columns=["sujet", "date", "uid"])
+            df_vide.to_excel(NOTIFICATIONS_EXCEL_FILE, index=False)
+            return []
+            
+        df = pd.read_excel(NOTIFICATIONS_EXCEL_FILE)
+        df = df.replace({np.nan: ""})
+        return df.to_dict(orient='records')
+
+    @staticmethod
+    def get_latest_notification_date():
+        """Trouve la date du mail le plus récent dans le cache, ou retourne le 01/08/2026 par défaut."""
+        import datetime
+        if os.path.exists(NOTIFICATIONS_EXCEL_FILE):
+            df = pd.read_excel(NOTIFICATIONS_EXCEL_FILE)
+            if not df.empty and "date" in df.columns:
+                # Convertit la colonne texte ("25/08/2026") en vraies dates mathématiques
+                dates = pd.to_datetime(df["date"], format="%d/%m/%Y", errors="coerce").dropna()
+                if not dates.empty:
+                    return dates.max().date()
+                    
+        # Date de production par défaut
+        return datetime.date(2026, 8, 1)
+
+    @staticmethod
+    def add_notifications(nouvelles_missions):
+        """Ajoute les nouveaux mails trouvés dans l'Excel de cache."""
+        if not nouvelles_missions: 
+            return
+            
+        df_new = pd.DataFrame(nouvelles_missions)
+        if os.path.exists(NOTIFICATIONS_EXCEL_FILE):
+            df = pd.read_excel(NOTIFICATIONS_EXCEL_FILE)
+            df = pd.concat([df, df_new], ignore_index=True)
+            # Sécurité anti-doublons au cas où IMAP relirait le même jour
+            df = df.drop_duplicates(subset=["sujet"], keep='first')
+        else:
+            df = df_new
+            
+        df.to_excel(NOTIFICATIONS_EXCEL_FILE, index=False)
+
+    @staticmethod
+    def remove_notification(sujet):
+        """Retire une mission du cache (quand elle est acceptée ou refusée)."""
+        if os.path.exists(NOTIFICATIONS_EXCEL_FILE):
+            df = pd.read_excel(NOTIFICATIONS_EXCEL_FILE)
+            df = df[df["sujet"] != sujet]
+            df.to_excel(NOTIFICATIONS_EXCEL_FILE, index=False)

@@ -54,42 +54,35 @@ class MissionCard(QFrame):
         webbrowser.open(f"https://mail.google.com/mail/u/0/#search/{self.mission_data['sujet']}")
 
     def accepter_mission(self):
-        """Ouvre la popup de création, sauvegarde et masque la notification."""
         self.parent_menu.hide()
         
-        # On passe le sujet du mail à la boîte de dialogue
         sujet_mail = self.mission_data['sujet']
         dialog = AddAffaireDialog(sujet_mail, self.window())
         
         if dialog.exec():
             type_affaire, nouvelles_donnees = dialog.get_data()
-            
-            # 1. Sauvegarde dans les Excels
             succes = ExcelManager.add_affaire(type_affaire, nouvelles_donnees)
             
             fenetre_principale = self.window()
             
             if succes:
-                # 2. On ajoute le mail aux refusés pour qu'il n'apparaisse plus en notification !
+                ExcelManager.remove_notification(sujet_mail)
                 ExcelManager.add_refused_mission(sujet_mail, self.mission_data['date'])
-                self.setParent(None) # Détruit visuellement la carte du menu
+                
+                self.setParent(None)
                 self.parent_menu.verifier_etat_vide()
                 
-                # 3. Notification de succès et rafraîchissement global
                 if hasattr(fenetre_principale, "afficher_notification"):
                     fenetre_principale.afficher_notification(f"Succès : L'affaire a été créée dans {type_affaire} !")
-                    
-                    # On force toutes les pages à se recharger pour afficher la nouvelle ligne
                     fenetre_principale.page_opj.charger_donnees_excel()
                     fenetre_principale.page_jaf.charger_donnees_excel()
                     fenetre_principale.page_ji.charger_donnees_excel()
                     fenetre_principale.page_accueil.generer_cartes()
-            else:
-                if hasattr(fenetre_principale, "afficher_notification"):
-                    fenetre_principale.afficher_notification("Erreur lors de la création de l'affaire.", is_error=True)
 
     def refuser_mission(self):
-        """Action de refus de la mission (sauvegarde + suppression visuelle)."""
-        ExcelManager.add_refused_mission(self.mission_data['sujet'], self.mission_data['date'])
-        self.setParent(None) # Détruit visuellement cette carte
+        sujet_mail = self.mission_data['sujet']
+        ExcelManager.remove_notification(sujet_mail)
+        ExcelManager.add_refused_mission(sujet_mail, self.mission_data['date'])
+        
+        self.setParent(None)
         self.parent_menu.verifier_etat_vide()

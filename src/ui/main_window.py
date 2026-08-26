@@ -329,8 +329,30 @@ class MainWindow(QMainWindow):
                 self.btn_notif.setText("🔔")
 
     def verifier_nouvelles_missions(self):
+        """Logique optimisée avec cache Excel."""
+        # 1. On charge le cache local et les refus
+        missions_cachees = ExcelManager.get_cached_notifications()
+        sujets_en_cache = [m['sujet'] for m in missions_cachees]
         missions_refusees = ExcelManager.get_refused_missions()
-        nouvelles = self.mail_connector.check_new_missions(missions_refusees)
         
-        self.menu_notif.peupler_missions(nouvelles)
-        self.mettre_a_jour_icone_cloche(len(nouvelles) > 0)
+        # 2. On demande à l'ExcelManager à quelle date on s'était arrêté
+        date_recherche = ExcelManager.get_latest_notification_date()
+        
+        # 3. Requête IMAP ultra-rapide (uniquement depuis la dernière date connue)
+        mails_trouves = self.mail_connector.check_new_missions(missions_refusees, date_recherche)
+        
+        # 4. On filtre pour ne garder que les VRAIES nouveautés
+        vraies_nouvelles = []
+        for mail in mails_trouves:
+            # Si le mail n'est ni déjà en notif, ni refusé
+            if mail['sujet'] not in sujets_en_cache and mail['sujet'] not in missions_refusees:
+                vraies_nouvelles.append(mail)
+                
+        # 5. S'il y a du nouveau, on l'ajoute au fichier Excel et à notre liste d'affichage
+        if vraies_nouvelles:
+            ExcelManager.add_notifications(vraies_nouvelles)
+            missions_cachees.extend(vraies_nouvelles)
+            
+        # 6. Mise à jour de l'interface graphique
+        self.menu_notif.peupler_missions(missions_cachees)
+        self.mettre_a_jour_icone_cloche(len(missions_cachees) > 0)
