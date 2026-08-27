@@ -1,6 +1,6 @@
 # MAJ - Manageur d'Affaires Juridiques
 
-Outil de bureau automatisé conçu dans le cadre d'un stage de deuxième année de Bachelor Informatique à Paris Ynov Campus (Nanterre). Développé par Raphaël Phan, ce logiciel est destiné aux professionnels du milieu juridique. Son but principal est d'offrir un gain de temps massif sur le suivi quotidien du travail, en automatisant la gestion des dossiers, la facturation et la synchronisation des données.
+Application de bureau destinée au suivi des affaires judiciaires, de la rédaction des rapports et des paiements. Elle a été développée en Python avec PyQt6 pour l'interface, Pandas/OpenPyXL pour les fichiers Excel et `imap-tools` pour la messagerie IMAP.
 
 L'application gère trois grands types d'affaires judiciaires :
 
@@ -8,92 +8,67 @@ L'application gère trois grands types d'affaires judiciaires :
 * **JAF** (Juge aux Affaires Familiales)
 * **JI** (Juge d'Instruction)
 
-**Pile Technologique** : Développé en Python 3, l'interface graphique repose sur PyQt6, tandis que la manipulation des données est assurée par Pandas. Les connexions serveur s'effectuent via `imap-tools`.
+## Sommaire
 
-## Arborescence du Projet et Configuration
+- [Prérequis](#prérequis)
+- [Arborescence](#arborescence)
+- [Installation et Commandes de Développement](#installation-et-commandes-de-développement)
+- [Fichiers Excel](#fichiers-excel)
+- [Liaison de la Messagerie (Mail)](#liaison-de-la-messagerie-(mail))
+- [Guide d'utilisation](#guide-dutilisation)
+- [Développement et compilation](#développement-et-compilation)
 
-Le projet respecte une architecture modulaire stricte séparant le backend de l'interface utilisateur.
+## Prérequis
+
+Avant l'installation, vérifier que la machine dispose des éléments suivants :
+
+- **Python 3.10 ou supérieur**, ajouté au `PATH` pour pouvoir utiliser les commandes `python` et `pip` ;
+- **un compte Google avec une adresse Gmail**, utilisé pour la détection des nouvelles missions par messagerie IMAP ;
+- **la validation en deux étapes activée** sur ce compte Google ;
+- **un mot de passe d'application Google** dédié à MAJ. Le mot de passe habituel du compte Google ne doit pas être utilisé dans `.env` ;
+- **un fichier maître Excel** nommé `EXPERTISES JUDICIAIRES.xlsx`, placé dans le dossier `assets/`.
+
+Une connexion Internet est nécessaire pour vérifier la boîte Gmail. Les droits d'écriture sont également nécessaires dans le dossier du projet, car l'application crée et actualise les fichiers Excel dérivés et les fichiers de cache.
+
+## Arborescence
 
 ```text
-MAJ/
-├── assets/                 # Dossier critique contenant les bases de données et icônes
-│   ├── EXPERTISES JUDICIAIRES.xlsx  # Le fichier maître de la base de données
-│   ├── REFUS_MISSION.xlsx           # Fichier de cache des missions refusées
-│   ├── NOTIFICATIONS_MISSIONS.xlsx  # Fichier de cache des notifications lues
-│   ├── app_icon.png                 # Icône principale de l'application
-│   ├── notification_up-icon.png     # Icône de cloche avec alerte rouge
-│   ├── notification_down-icon.png   # Icône de cloche standard (sans alerte)
-│   └── update_transaction.png       # Icône du bouton flottant des paiements
+MAJ---Manageur-d-affaires-juridiques/
+├── assets/
+│   ├── EXPERTISES JUDICIAIRES.xlsx          # Fichier maître
+│   ├── EXPERTISES JUDICIAIRES- OPJ.xlsx     # Fichier généré pour les OPJ
+│   ├── EXPERTISES JUDICIAIRES- JAF.xlsx     # Fichier généré pour les JAF
+│   ├── EXPERTISES JUDICIAIRES- JI.xlsx      # Fichier généré pour les JI
+│   ├── NOTIFICATIONS_MISSIONS.xlsx          # Cache des missions reçues
+│   ├── REFUS_MISSION.xlsx                   # Missions refusées
+│   └── *.png                                # Icônes de l'application
 ├── src/
-│   ├── backend/            # Logique métier (ExcelManager, MailConnector)
-│   └── ui/                 # Vues (Dashboard, JAF, OPJ, JI) et composants (Cartes, Dialogues)
-├── .env                    # Fichier caché contenant les identifiants de messagerie
-├── config.py               # Fichier centralisant les chemins, dimensions, colonnes et styles QSS
-├── main.py                 # Point d'entrée de l'application (initialisation PyQt6 et Windows AppID)
-└── requirements.txt        # Liste des dépendances Python
-
+│   ├── backend/
+│   │   ├── excel_manager.py                 # Lecture, écriture et synchronisation Excel
+│   │   └── mail_connector.py                # Connexion à Gmail en IMAP
+│   └── ui/
+│       ├── add_affaire_dialog.py            # Formulaire de création d'une affaire
+│       ├── card_dashboard_component.py      # Carte d'un indicateur du dashboard
+│       ├── card_jaf_component.py            # Carte d'une affaire JAF
+│       ├── card_ji_component.py             # Carte d'une affaire JI
+│       ├── card_mission_component.py        # Carte d'une mission reçue par mail
+│       ├── card_opj_component.py            # Carte d'une affaire OPJ
+│       ├── customize_pins_dialog.py         # Personnalisation des indicateurs
+│       ├── edit_affaire_dialog.py           # Formulaire de modification d'une affaire
+│       ├── main_window.py                   # Fenêtre principale et navigation
+│       ├── notification_menu.py             # Menu des notifications de missions
+│       ├── view_dashboard.py                # Accueil et indicateurs
+│       ├── view_jaf.py                      # Vue de gestion des affaires JAF
+│       ├── view_ji.py                       # Vue de gestion des affaires JI
+│       ├── view_opj.py                      # Vue de gestion des affaires OPJ
+├── .env                                     # Identifiants locaux, à ne pas versionner
+├── .gitignore                               # Rends certains fichiers et dossiers invisibles à github lors du push
+├── config.py                                # Chemins, colonnes, choix et styles
+├── main.py                                  # Point d'entrée
+└── requirements.txt                         # Dépendances Python
 ```
 
-## Base de Données Excel
-
-Le système repose sur un fichier maître (`EXPERTISES JUDICIAIRES.xlsx`) qui est automatiquement découpé en sous-fichiers (OPJ, JAF, JI) au lancement pour optimiser les temps de chargement.
-
-### Colonnes obligatoires du Fichier Maître
-
-Pour que le système de découpage et d'anti-doublon fonctionne, le fichier global doit impérativement contenir les colonnes suivantes :
-
-| Nom de la colonne | Type de donnée attendu | Description |
-| --- | --- | --- |
-| **REF AFFAIRE** | `Texte` (String) | Permet de diviser le fichier (Valeurs : "OPJ", "JAF", "JI")
-
- |
-| **NOM** | `Texte` (String) | Nom du dossier/client (Utilisé pour l'anti-doublon)
-
- |
-| **CHORUS PRO** | `Texte` (String) | Référence de facturation (Utilisé pour l'anti-doublon et les paiements)
-
- |
-
-### Colonnes par type d'affaire
-
-Chaque onglet de l'application gère des données spécifiques listées dans le fichier de configuration.
-
-| Type | Colonnes lues par le logiciel | Format des données |
-| --- | --- | --- |
-| **OPJ** | NOM, Planification, Propriétaire, CHORUS PRO, periode, montant, État, État 2
-
- | `montant` en float64, autres en Texte |
-| **JAF** | NOM, Planification, DATE, date de redaction du rapport, DATE REMISE DES RAPPORT, periode, État, État 2, montant
-
- | Dates gérées par Pandas, `montant` en float64 |
-| **JI** | NOM, periode, Planification, CHORUS PRO, État, État 2, montant
-
- | `montant` en float64, autres en Texte |
-
-## Liaison de la Messagerie (Mail)
-
-Le logiciel scanne automatiquement la boîte mail en arrière-plan pour détecter les nouvelles missions entrantes. Pour des raisons de sécurité, l'accès se fait obligatoirement via un mot de passe d'application.
-
-1. **Configuration du compte Google** :
-* Connectez-vous à votre compte Gmail sur un navigateur.
-* Accédez à **Gérer votre compte Google** > **Sécurité**.
-* Activez impérativement la **Validation en deux étapes**.
-* Cherchez **Mots de passe des applications** dans la barre de recherche des paramètres.
-* Créez une nouvelle application nommée "MAJ" et copiez le code secret de 16 lettres généré.
-
-
-2. **Configuration du projet (.env)** :
-* À la racine du projet, créez un fichier nommé exactement `.env`.
-* Ajoutez vos identifiants selon ce format strict :
-```env
-EMAIL_COMPTE="votre_adresse@gmail.com"
-EMAIL_PASSWORD="les_16_lettres_du_mot_de_passe"
-
-```
-
-
-
-
+Les fichiers Excel OPJ/JAF/JI sont des fichiers dérivés : ils sont recréés depuis le fichier maître lorsque celui-ci est plus récent ou lorsqu'un fichier dérivé manque. Il faut donc modifier les données depuis l'application ou depuis le fichier maître, puis relancer l'application.
 
 ## Installation et Commandes de Développement
 
@@ -132,50 +107,120 @@ python main.py
 
 ```
 
+Au premier lancement, le fichier maître doit déjà être présent dans `assets/`. Les fichiers dérivés et les caches sont créés ou actualisés automatiquement.
 
-7. **Compilation (Création du .exe)** :
-```bash
-pyinstaller --noconsole --name "MAJ" --icon="assets/app_icon.png" --add-data "assets;assets" --add-data ".env;." main.py
+## Fichiers Excel
+
+### Fichier maître
+
+Le fichier `assets/EXPERTISES JUDICIAIRES.xlsx` peut contenir un ou plusieurs onglets. Ils sont fusionnés, dédoublonnés, puis répartis selon `REF AFFAIRE`.
+
+| Colonne | Obligatoire | Rôle et valeur attendue |
+| --- | --- | --- |
+| `REF AFFAIRE` | Oui | Type d'affaire : `OPJ`, `JAF` ou `JI`. Les espaces et la casse sont normalisés lors du découpage. |
+| `NOM` | Oui pour identifier une affaire | Nom de l'affaire. Sert de clé de secours pour les mises à jour et au dédoublonnage. |
+| `CHORUS PRO` | Oui pour OPJ/JI et le rapprochement des paiements | Référence de facturation, par exemple `MJ12345`. Elle doit correspondre aux références du relevé bancaire. |
+
+`REF AFFAIRE` est indispensable au découpage. `NOM` et `CHORUS PRO` sont les clés utilisées par le logiciel lorsqu'elles existent ; il est recommandé de les renseigner sur chaque ligne.
+
+### Colonnes attendues par type
+
+Les noms doivent être repris exactement, y compris les accents, les espaces et la casse. `montant` doit être convertible en nombre. Les dates peuvent être des dates Excel reconnues par Pandas ou du texte cohérent.
+
+| Type | Colonnes backend définies dans `config.py` |
+| --- | --- |
+| **OPJ** | `NOM`, `Planification`, `Column 13`, `Propriétaire`, `CHORUS PRO`, `periode`, `montant`, `État`, `État 2` |
+| **JAF** | `NOM`, `Planification`, `DATE`, `date de redaction du rapport`, `DATE REMISE DES RAPPORT`, `periode`, `État`, `État 2`, `montant` |
+| **JI** | `NOM`, `periode`, `Planification`, `CHORUS PRO`, `État`, `État 2`, `montant` |
+
+Les colonnes affichées sont configurées dans `OPJ_FRONT_COLUMNS`, `JAF_FRONT_COLUMNS` et `JI_FRONT_COLUMNS`. La vue JAF peut afficher `Propriétaire` s'il est présent, même si cette colonne ne figure pas dans `JAF_BACK_COLUMNS`.
+
+Les valeurs proposées lors de la modification sont :
+
+- `État` : `A faire`, `Terminé`, `Pas commencé`, `En cours` ;
+- `État 2` : `payé`, `En attente`, `Non payé`, `N/A` ;
+- `Planification` : `VU`, `ATTENTE DATES`, `A CONVOQUER`, `N/A`.
+
+### Fichiers de cache
+
+- `NOTIFICATIONS_MISSIONS.xlsx` contient `sujet`, `date` et `uid`.
+- `REFUS_MISSION.xlsx` contient `Sujet` et `Date`.
+
+Ces deux fichiers sont gérés automatiquement par l'application.
+
+## Liaison de la Messagerie (Mail)
+
+Le logiciel scanne automatiquement la boîte mail Google en arrière-plan pour détecter les nouvelles missions entrantes, une fois lors du lancement du logiciel, puis toutes les 30 minutes. Pour des raisons de sécurité, l'accès se fait obligatoirement via un mot de passe d'application.
+
+1. **Configuration du compte Google** :
+* Connectez-vous à votre compte Gmail sur un navigateur.
+* Accédez à **Gérer votre compte Google** > **Sécurité**.
+* Activez impérativement la **Validation en deux étapes**.
+* Cherchez **Mots de passe des applications** dans la barre de recherche des paramètres.
+* Créez une nouvelle application nommée "MAJ" et copiez le code secret de 16 lettres généré.
+
+
+2. **Configuration du projet (.env)** :
+* À la racine du projet, créez un fichier nommé exactement `.env`.
+* Ajoutez vos identifiants selon ce format strict :
+```env
+EMAIL_COMPTE="votre_adresse@gmail.com"
+EMAIL_PASSWORD="les_16_lettres_du_mot_de_passe"
 
 ```
 
+Le menu de notification permet de consulter les missions détectées, de les accepter ou de les refuser. Une mission refusée est conservée dans `REFUS_MISSION.xlsx` et ne sera plus proposée.
 
+## Guide d'utilisation
 
-## Guide des Fonctionnalités de l'Application
+### 1. Accueil et navigation
 
-L'interface graphique est conçue de manière ergonomique pour limiter les clics et centraliser les outils.
+Le bandeau supérieur donne accès aux pages **Accueil**, **OPJ**, **JAF** et **JI**. L'accueil affiche six indicateurs par défaut : totaux OPJ/JAF/JI, dossiers en attente de paiement, montant total facturé et rapports à faire. Les indicateurs disponibles peuvent être personnalisés dans l'application ; ils incluent aussi les affaires terminées et les dossiers sans référence Chorus Pro.
 
-### 1. Composants Permanents
+### 2. Rechercher, filtrer et trier
 
-* **Le Header (En-tête)** : Permet la navigation fluide entre les différents onglets (Accueil, OPJ, JAF, JI). Sur la droite se trouve l'icône de notification. Elle s'affiche avec un point rouge (fichier `notification_up-icon.png`) lorsqu'un nouveau mail dont le sujet commence par "MISSION" est détecté. En cliquant dessus, un menu déroulant permet de consulter, accepter ou refuser ces affaires.
+Dans une page OPJ, JAF ou JI :
 
+1. Utiliser la barre de recherche pour filtrer instantanément les cartes selon leur contenu.
+2. Utiliser les listes à gauche pour croiser les critères disponibles. OPJ propose aussi le filtre de planification.
+3. Cliquer sur un bouton de tri pour trier une colonne. Un second clic désactive le tri et restaure l'ordre initial.
 
-* **Le Bouton de Mise à Jour (Paiements)** : Un bouton flottant circulaire contenant le visuel `update_transaction.png` est situé en bas à droite de l'écran. En cliquant dessus, une boîte de dialogue s'ouvre pour sélectionner un relevé bancaire Excel. Le logiciel croise automatiquement le motif "MJ" suivi de chiffres dans ce relevé avec la colonne "CHORUS PRO" de vos dossiers, et passe le statut "État 2" à "payé".
+### 3. Ajouter et modifier une affaire
 
+Les boutons d'ajout et de modification ouvrent un formulaire adapté au type d'affaire. Après validation, l'affaire est écrite dans le fichier du service et dans le fichier maître. Lors d'un ajout, `REF AFFAIRE` est renseigné automatiquement avec `OPJ`, `JAF` ou `JI` dans le fichier maître.
 
+Pour une modification, le logiciel recherche d'abord `CHORUS PRO` lorsqu'il est renseigné, puis utilise `NOM` comme solution de repli, notamment pour les JAF.
 
-### 2. Le Dashboard (Accueil)
+### 4. Mettre à jour les paiements
 
-Vue globale générant des indicateurs de performance en temps réel.
+1. Cliquer sur le bouton flottant de paiement en bas à droite.
+2. Sélectionner un fichier Excel de relevé bancaire.
+3. Vérifier qu'il contient une colonne nommée exactement `Référence`.
 
-* Affiche 6 cartes personnalisables par défaut au lancement.
+Le logiciel extrait dans cette colonne les motifs `MJ` suivis de chiffres, les compare à `CHORUS PRO`, puis remplace `État 2` par `payé` dans le fichier maître et dans les fichiers OPJ/JAF/JI concernés.
 
+### 5. Notifications de missions
 
-* Permet de suivre d'un coup d'œil le total de dossiers par service, les dossiers en attente de paiement, ou la somme totale facturée au cabinet.
+La cloche signale les missions reçues depuis la dernière date enregistrée. Ouvrir le menu pour traiter chaque mission. L'acceptation retire la notification du cache ; le refus la retire également et l'ajoute à la liste des missions refusées.
 
+## Compilation
 
+Créer un exécutable Windows avec PyInstaller :
 
-### 3. Vues OPJ, JAF et JI
+```bash
+pyinstaller --noconsole --name "MAJ" --icon="assets/app_icon.png" --add-data "assets;assets" --add-data ".env;." main.py
+```
 
-L'interface de gestion de chaque service suit la même structure pour faciliter la prise en main :
+A la fin de la compilation, si cette dernière c'est bien passé, vous devrez pourvoir lire similaire à `47836 INFO: Build complete! The results are available in: C:\Emplacement\Du\Dossier\Dans\Votre\Machine\MAJ---Manageur-d-affaires-juridiques\dist`
 
-* **Filtres (Partie gauche)** : Des listes déroulantes permettent de filtrer finement les dossiers croisés par Période, Planification, Statut du rapport et Statut du paiement.
+La compilation crée les éléments suivants à la racine du projet :
 
+- `/dist` : contient le résultat distribuable de la compilation. Avec cette commande, il contient le dossier `MAJ - Manageur d'affaires juridiques` et l'exécutable Windows ;
+- `/build` : contient les fichiers temporaires utilisés par PyInstaller pendant la construction. Il peut être supprimé après une compilation réussie ;
+- `MAJ - Manageur d'affaires juridiques.spec` : fichier de configuration généré par PyInstaller. Il peut être réutilisé pour relancer ou personnaliser une compilation.
 
-* **Barre de Recherche** : Saisie libre filtrant instantanément les cartes affichées par n'importe quelle donnée (nom, référence, etc.).
+Vous trouverez dans le dossier `dist/MAJ - Manageur d'affaires juridiques` le logiciel **MAJ - Manageur d'affaires juridiques.exe**, ainsi que les ressources nécessaires à son fonctionnement, notamment le dossier `_internal` et une copie de `assets` intégrée par l'option `--add-data`.
 
+Pour distribuer l'application, transmettre le dossier complet présent dans `dist`, et non le seul fichier `.exe` : l'exécutable dépend des fichiers et bibliothèques qui l'accompagnent.
 
-* **Boutons de Tri** : Des boutons "Switch" organisent les données affichées chronologiquement, alphabétiquement ou par montants.
-
-
-* **Cartes Affaires** : Chaque dossier est encapsulé dans une carte visuelle. Un bouton "Modifier" ouvre une boîte de dialogue permettant de mettre à jour le dossier. La sauvegarde synchronise instantanément le fichier Excel spécifique du service ET le fichier maître global, évitant ainsi toute perte de données.
+Ne jamais publier `.env` ni les fichiers Excel contenant des données réelles. Avant toute modification manuelle du fichier maître, effectuer une copie de sauvegarde.
