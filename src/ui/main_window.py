@@ -15,12 +15,6 @@ from src.backend.excel_manager import ExcelManager
 from src.ui.notification_menu import NotificationMenu
 from src.backend.mail_connector import MailConnector
 
-#Pour Windows, pour que l'icône de l'application apparaisse dans la barre des tâches
-if os.name == 'nt':
-    import ctypes
-    myappid = 'drgoetz.gestioncabinet.app.1' 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
